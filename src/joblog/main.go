@@ -5,38 +5,35 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	// "io"
-	"log"
-	"github.com/antony1140/joblog/data"
 	"github.com/antony1140/joblog/models"
 	"github.com/antony1140/joblog/dao"
+	"github.com/antony1140/joblog/data"
 ) 
 
 func getRoot(resp http.ResponseWriter, req *http.Request){
-	resp.Write([]byte("home"))
+	resp.Write([]byte("root"))
 }
 
 func getDash(resp http.ResponseWriter, req *http.Request){
 	resp.Write([]byte("Dashboard"))
 }
 
+
+
 func main(){
 	// data.InitDb()
 	http.HandleFunc("/", getRoot)
 	http.HandleFunc("/dash", getDash)
+	http.HandleFunc("/home", func(resp http.ResponseWriter, req *http.Request){
+		resp.Write([]byte("home"))
+	})
 	var test models.Job 
 	test.Title = "test title"
 	test.Description = "test Description"
 	dao.CreateJob(&test)
-
 	client := data.InitS3()
-	
-	file, fileErr := os.Open("./assets/BurlakaAssignment9.pdf")
-	if fileErr != nil {
-		log.Fatal(fileErr)
-	}
+	data.DownloadS3(client, "testDownload")
 
-	data.UploadS3(client, file)
 
 	
 

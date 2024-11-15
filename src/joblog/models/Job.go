@@ -19,12 +19,5 @@ func NewJob(title string, desc string) *Job{
 	return &job
 }
 
-func GetId(job *Job) int {
-	return job.Id
-}
-func GetTitle(job *Job) string {
-	return job.Title
-}
-func GetDesc(job *Job) string {
-	return job.Description
-}
+
+
