@@ -11,3 +11,7 @@ func NewOrg(name string)(*Org){
 	org.Name = name
 	return &org
 }
+
+func (org *Org) GetName () *string{
+	return &org.Name	
+}

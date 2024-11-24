@@ -21,22 +21,24 @@ func CreateJob(job *models.Job){
 	}
 }
 
-func GetJob(job *models.Job)(*models.Job, error){
-	sql := "SELECT * FROM job WHERE id = ?"
+func GetJobById(id int)(*models.Job, error){
+	sql := "SELECT id, title, description FROM job WHERE id = ?"
 	db := data.OpenDb()
+	var job models.Job
 	stmt, err := db.Prepare(sql)
 	if err != nil {
-		return job, err
+		return &job, err
 	}
 	defer stmt.Close()
-	row := stmt.QueryRow(job.Id)
-	if err := row.Scan(&job.Id, &job.Title, &job.Description, &job.Contract); err != nil{
-		return job, err
+	row := stmt.QueryRow(id)
+
+	if err := row.Scan(&job.Id, &job.Title, &job.Description); err != nil{
+		return &job, err
 	}
-	return job, err
+	return &job, err
 }
 
-func GetAllJobsByOrg(id int)([]models.Job, error){
+func GetAllJobsByOrgId(id int)([]models.Job, error){
 	sql := "SELECT * FROM job WHERE org = ?"
 	var jobs []models.Job
 	db := data.OpenDb()
@@ -51,7 +53,7 @@ func GetAllJobsByOrg(id int)([]models.Job, error){
 	}
 	for rows.Next(){
 		var job models.Job
-		if err:= rows.Scan(&job.Id, &job.Title, &job.Description, &job.Contract); err != nil{
+		if err:= rows.Scan(&job.Id, &job.Title, &job.Description); err != nil{
 			return jobs, err
 		}
 		jobs = append(jobs, job)
@@ -63,7 +65,7 @@ func GetAllJobsByOrg(id int)([]models.Job, error){
 func UpdateJob(job *models.Job)(int, error){
 	sql := "UPDATE job SET title = ?, description = ?, contract = ?"
 	db := data.OpenDb()
-	_, err := db.Exec(sql, job.Title, job.Description, job.Contract)
+	_, err := db.Exec(sql, job.Title, job.Description)
 	if err != nil {
 		return 0, err
 	}
