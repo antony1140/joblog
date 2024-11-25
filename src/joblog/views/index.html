@@ -42,6 +42,14 @@
 		</nav>	
 
 		<main class="container">
+			{{template "form" .}}
+			{{template "error" .}}
+		</main>
+	</body>
+</html>
+{{end}}
+
+{{block "form" .}}
 		<div class="card mt-5">
 
 				<form action="/login" method="post" class="m-3"> 
@@ -51,11 +59,21 @@
 					<label for="password"> password: </label>
 					<input class="mb-2"type="password" name="password">
 					<br>
-					<input id="login" type="submit" name="submit">
+					<input id="login" type="submit">
 				</form>
 
 			</div>
-		</main>
-	</body>
 {{end}}
-</html>
+
+{{block "error" .}}
+{{if .}}
+<div class="card">
+	<div class="card-body">
+<p class="card-text">
+			{{.}}
+</p>
+	</div>
+
+</div>
+{{end}}
+{{end}}

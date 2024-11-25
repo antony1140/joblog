@@ -40,6 +40,23 @@ type orgList struct {
 }
 
 
+type errList = []LoginErr
+
+type LoginErr struct {
+	Err bool
+}
+
+type indexData struct {
+	errs []LoginErr
+}
+
+func newIndexData(loginErr []LoginErr)(indexData){
+	return indexData{
+		errs: loginErr,
+	}
+}
+
+
 
 func main(){
 	e := echo.New()
@@ -50,7 +67,7 @@ func main(){
 
 
 	e.GET("/", func(c echo.Context) error {
-		return c.Render(200, "index"," successful" )
+		return c.Render(200, "index","" )
 	})
 
 	e.GET("/testauth", func(c echo.Context) error {
@@ -74,15 +91,28 @@ func main(){
 		fmt.Println(user.Name, user.Username)
 		return nil
 	})
-	e.GET("/Login", func(c echo.Context) error {
+	e.POST("/login", func(c echo.Context) error {
 		username := c.FormValue("username")
 		pass := c.FormValue("password")
 		user, err := service.LoginUser(username, pass)
 		if err != nil {
-			return err
+			// var errs errList
+			// var err loginErr
+			// err.err = true
+			// errs = append(errs, err)
+
+			// data := newIndexData(errs)
+			// Data := struct {
+			// 	Err error
+			// }{
+			// 	Err: err,
+			// }
+			return c.Render(404, "index", "Invalid Credentials, Try again.")
 		}
 		fmt.Println(user.Name, user.Username)
-		return nil
+		fmt.Println(err)
+		
+			return c.Render(404, "index", "")
 	})
 
 	e.GET("/getJob", func(c echo.Context) error {
