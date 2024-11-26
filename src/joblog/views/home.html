@@ -40,14 +40,18 @@
 		</nav>	
 
 		<main class="container">
+			<h2> Home </h2>
 		<div class="card mt-5">
 			<div class="card-body">
+					{{if .}}
 
 		<ul>
+						
 						{{range .}} <a href=""><li>{{.Name}} </li></a>
 					<hr>
 					{{end}}
 		</ul>
+					{{end}}
 			</div>
 		</div>
 		</main>

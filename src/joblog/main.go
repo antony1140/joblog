@@ -9,7 +9,7 @@ import (
 	"html/template"
 	// "context"
 	"io"
-	// "log"
+	"log"
 	"github.com/antony1140/joblog/dao"
 	"github.com/antony1140/joblog/data"
 	"github.com/antony1140/joblog/models"
@@ -17,6 +17,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"strconv"
+	"github.com/antony1140/joblog/security"
 )
 
 
@@ -67,6 +68,11 @@ func main(){
 
 
 	e.GET("/", func(c echo.Context) error {
+		haveSesh, _ := security.GetSession(c)
+		if haveSesh {
+			// userId := id	
+		}
+
 		return c.Render(200, "index","" )
 	})
 
@@ -96,23 +102,36 @@ func main(){
 		pass := c.FormValue("password")
 		user, err := service.LoginUser(username, pass)
 		if err != nil {
-			// var errs errList
-			// var err loginErr
-			// err.err = true
-			// errs = append(errs, err)
-
-			// data := newIndexData(errs)
-			// Data := struct {
-			// 	Err error
-			// }{
-			// 	Err: err,
-			// }
 			return c.Render(404, "index", "Invalid Credentials, Try again.")
 		}
 		fmt.Println(user.Name, user.Username)
 		fmt.Println(err)
+		sessionCookie := security.CreateSession(true, user.Id)
+		log.Print("session created for user", user.Id, "session: ", sessionCookie.Value)
+		c.SetCookie(sessionCookie)
+
 		
-			return c.Render(404, "index", "")
+			// return c.Render(404, "home", "")
+			log.Print("got to redirect /home")
+			return c.Redirect(302, "/home/")
+	})
+
+	e.GET("/home/", func(c echo.Context) error {
+		hasUser, id := security.GetSession(c)	
+		log.Print("hasUser: ", hasUser)
+		if hasUser {
+		cookie, _ := c.Cookie("sid")
+		log.Print(id, " ", cookie.Value)
+
+			log.Print("got to render home")
+		return c.Render(200, "home", "")
+
+		}
+			log.Print("got to redirect /")
+		
+		return c.Redirect(302, "/")
+
+
 	})
 
 	e.GET("/getJob", func(c echo.Context) error {
@@ -140,27 +159,8 @@ func main(){
 			fmt.Println("what is this")
 			fmt.Println(org.Name)
 		}
-		// data := orgList{
-		// 	list: orgs,
-		// }
 		return c.Render(200, "home", orgs)
 	})
-	// data.InitDb()
-	// http.HandleFunc("/", getRoot)
-	// http.HandleFunc("/dash", getDash)
-	// http.HandleFunc("/home", func(resp http.ResponseWriter, req *http.Request){
-	// 	resp.Write([]byte("home"))
-	// })
-	//jobs
-	// http.HandleFunc("/job", func(resp http.ResponseWriter, req *http.Request){
-		 
-	// 	 job, err := service.GetJobById(1)
-	// 	 if err != nil {
-	// 		 fmt.Println("error", err)
-	// 	 }
-	// 	 fmt.Print(models.PrintJob(job))
-	// 	 resp.Write([]byte(models.PrintJob(job)))
-	// })
 
 
 
