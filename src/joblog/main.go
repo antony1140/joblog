@@ -64,14 +64,26 @@ func main(){
 	e.Use(middleware.Logger())
 	e.Renderer = newTemplate()
 	e.Static("/", "views")
+	e.Static("/views", "icons")
 	e.Use(middleware.CORS())
 
 
 	e.GET("/", func(c echo.Context) error {
-		haveSesh, _ := security.GetSession(c)
-		if haveSesh {
+		// haveSesh, _ := security.GetSession(c)
+		// if haveSesh {
 			// userId := id	
+		// }
+		hasUser, id := security.GetSession(c)	
+		log.Print("hasUser: ", hasUser)
+		if hasUser {
+		cookie, _ := c.Cookie("sid")
+		log.Print(id, " ", cookie.Value)
+
+			log.Print("got to render home")
+		return c.Redirect(302, "home")
+
 		}
+		
 
 		return c.Render(200, "index","" )
 	})
@@ -107,24 +119,49 @@ func main(){
 		fmt.Println(user.Name, user.Username)
 		fmt.Println(err)
 		sessionCookie := security.CreateSession(true, user.Id)
-		log.Print("session created for user", user.Id, "session: ", sessionCookie.Value)
+		log.Print("session created for user ", user.Id, " session: ", sessionCookie.Value)
 		c.SetCookie(sessionCookie)
 
 		
 			// return c.Render(404, "home", "")
 			log.Print("got to redirect /home")
-			return c.Redirect(302, "/home/")
+			return c.Redirect(302, "/home")
 	})
 
-	e.GET("/home/", func(c echo.Context) error {
+	e.GET("/home", func(c echo.Context) error {
 		hasUser, id := security.GetSession(c)	
+		log.Print("userid: ", id)
 		log.Print("hasUser: ", hasUser)
 		if hasUser {
 		cookie, _ := c.Cookie("sid")
 		log.Print(id, " ", cookie.Value)
 
+			// log.Print("got to render home")
+		// return c.Render(200, "home", "")
+		//
+		orgs, sqlErr := dao.GetAllOrgsByUserId(id)
+		if sqlErr != nil {
+			fmt.Println(sqlErr)
+		}
+		log.Print("orgs list: ", len(orgs))
+			
+		for _, org := range orgs {
+			fmt.Println("what is this")
+			fmt.Println(org.Name, "id: ", org.Id)
+		}
+		activeUser,_ := dao.GetUserById(id)
+		data := struct {
+			User *models.User
+			Orgs []models.Org
+
+		} {
+			User: activeUser,
+			Orgs: orgs,
+		}
+
 			log.Print("got to render home")
-		return c.Render(200, "home", "")
+		return c.Render(200, "home", data)
+		///
 
 		}
 			log.Print("got to redirect /")
@@ -132,6 +169,88 @@ func main(){
 		return c.Redirect(302, "/")
 
 
+	})
+
+	e.POST("/NewGroup", func(c echo.Context) error {
+		hasUser, id := security.GetSession(c)	
+		if hasUser {
+		cookie, _ := c.Cookie("sid")
+		log.Print(id, " ", cookie.Value)
+		var newGroup models.Org
+		newGroup.Name = c.FormValue("name")
+		newGroup.Description = c.FormValue("desc")
+		groupId, err := dao.CreateOrg(&newGroup)
+		if err != nil {
+			log.Print("failed to create group")
+			log.Print(err)
+			return c.Redirect(302, "home")
+		}
+		userErr := dao.AddOrgUser(id, groupId)
+		if userErr != nil {
+			log.Print("failed to add group user")
+			log.Print(userErr)
+			return c.Redirect(302, "home")
+		}
+		// data := struct {
+		// 	User *models.User
+		// 	Org *models.Org
+		// 	Jobs []models.Job
+		//
+		// } {
+		//
+		// }
+
+			log.Print("Created new group and added user")
+		return c.Redirect(302, "/home")
+
+		}
+		
+		return c.Redirect(302, "/")
+		
+	})
+
+	e.GET("/group/:id", func(c echo.Context) error {
+		hasUser, id := security.GetSession(c)	
+		log.Print("userid: ", id)
+		log.Print("hasUser: ", hasUser)
+		if hasUser {
+		cookie, _ := c.Cookie("sid")
+		log.Print(id, " ", cookie.Value)
+		orgId, _ := strconv.Atoi(c.Param("id"))
+		jobs, sqlErr := dao.GetAllJobsByOrgId(orgId)
+		if sqlErr != nil {
+			fmt.Println(sqlErr)
+		}
+		log.Print("jobs list: ", len(jobs))
+			
+		for _, job := range jobs {
+			fmt.Println("what is this")
+			fmt.Println(job.Title)
+		}
+		activeUser,_ := dao.GetUserById(id)
+		activeOrg, daoErr := dao.GetOrgById(orgId)
+		if daoErr != nil{
+			log.Print("failed to get orgaization from db at group page")
+		}
+		data := struct {
+			User *models.User
+			Org *models.Org
+			Jobs []models.Job
+
+		} {
+			User: activeUser,
+			Jobs: jobs,
+			Org: activeOrg,
+		}
+
+			log.Print("got to render orgPage")
+		return c.Render(200, "orgPage", data)
+
+		}
+			log.Print("got to redirect /")
+		
+		return c.Redirect(302, "/")
+		
 	})
 
 	e.GET("/getJob", func(c echo.Context) error {
@@ -159,7 +278,17 @@ func main(){
 			fmt.Println("what is this")
 			fmt.Println(org.Name)
 		}
-		return c.Render(200, "home", orgs)
+		activeUser,_ := dao.GetUserById(id)
+		data := struct {
+			User *models.User
+			Orgs []models.Org
+
+		} {
+			User: activeUser,
+			Orgs: orgs,
+		}
+
+		return c.Render(200, "home", data)
 	})
 
 

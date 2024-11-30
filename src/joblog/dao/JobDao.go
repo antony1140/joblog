@@ -39,7 +39,7 @@ func GetJobById(id int)(*models.Job, error){
 }
 
 func GetAllJobsByOrgId(id int)([]models.Job, error){
-	sql := "SELECT * FROM job WHERE org = ?"
+	sql := "SELECT id, title, description FROM job WHERE org_id = ?"
 	var jobs []models.Job
 	db := data.OpenDb()
 	stmt, err := db.Prepare(sql)

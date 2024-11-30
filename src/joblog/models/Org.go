@@ -3,6 +3,7 @@ package models
 type Org struct {
 	Id int
 	Name string
+	Description string
 	jobs []Job
 }
 

@@ -45,7 +45,7 @@ func GetSession(c echo.Context)(bool, int){
 			log.Print("got to scan err")
 		return false, 0
 	}
-		log.Print("session found for user", userid, "session: ", cookie.Value)
+	log.Print("session found for user: ", userid, " session: ", cookie.Value)
 	return true, userid	
 }
 
@@ -58,7 +58,7 @@ func CreateSession(insert bool, id int) *http.Cookie{
 	//
 	// Path       string    // optional
 	// Domain     string    // optional
-		Expires:   time.Now().Add(time.Second * 300),
+		Expires:   time.Now().Add(time.Second * 1800),
 	// RawExpires string    // for reading cookies only
 	//
 	// // MaxAge=0 means no 'Max-Age' attribute specified.

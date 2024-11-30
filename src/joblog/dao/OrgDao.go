@@ -1,20 +1,36 @@
 package dao
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/antony1140/joblog/data"
 	"github.com/antony1140/joblog/models"
-	"fmt"
 )
 
-func CreateOrg(org *models.Org)(error){
-	sql := "INSERT INTO Job (name) values (?)"
+func CreateOrg(org *models.Org)(int, error){
+	sql := "INSERT INTO Org (name, description) values (?, ?)"
 	db := data.OpenDb()
-	_, err := db.Exec(sql, org.Name)
+	result, err := db.Exec(sql, org.Name, org.Description)
+	if err != nil {
+		return 0, err
+	}
+	newId, resultErr := result.LastInsertId()
+	if resultErr != nil {
+		log.Print(resultErr)
+	}
+	return int(newId), nil
+
+}
+
+func AddOrgUser(userId int, orgId int)(error){
+	sql := "INSERT INTO OrgUsers (user_id, org_id) values (?, ?)"
+	db := data.OpenDb()
+	_, err := db.Exec(sql, userId, orgId)
 	if err != nil {
 		return err
 	}
 	return nil
-
 }
 
 func GetOrg(name string)(*models.Org, error){
@@ -27,11 +43,21 @@ func GetOrg(name string)(*models.Org, error){
 	}
 	return &org, nil
 }
+func GetOrgById(id int)(*models.Org, error){
+	sql := "SELECT id, name, description FROM Org WHERE id = ?"
+	db := data.OpenDb()
+	row := db.QueryRow(sql, id)
+	var org models.Org
+	if err := row.Scan(&org.Id, &org.Name, &org.Description); err != nil{
+		return &org, err
+	}
+	return &org, nil
+}
 
 func GetAllOrgsByUserId(id int) ([]models.Org, error) {
 	orgs := []models.Org{}
 	db := data.OpenDb()
-	sql := "select name from org left outer join orgusers on org.id = orgusers.user_id where orgusers.user_id = ?;"
+	sql := "select org.id, org.name from org join orgusers on org.id = orgusers.org_id where orgusers.user_id = ?;"
 
 	rows, rowErr := db.Query(sql, id)
 	if rowErr != nil {
@@ -39,11 +65,12 @@ func GetAllOrgsByUserId(id int) ([]models.Org, error) {
 	}
 	for rows.Next(){
 		var org models.Org
-		if err:= rows.Scan(&org.Name); err != nil{
+		if err:= rows.Scan(&org.Id, &org.Name); err != nil{
 			fmt.Println("there was an error in sql")
 			return orgs, err
 		}
 		orgs = append(orgs, org)
+		// fmt.Print("from sql org id: ", org.Id)
 		fmt.Println(len(orgs))
 
 	}

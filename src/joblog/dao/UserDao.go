@@ -23,6 +23,21 @@ func GetUserByLogin(un string, pwd string) (*models.User, error){
 	return &user, nil
 }
 
+func GetUserById(id int) (*models.User, error){
+	var user models.User
+	sql := "select name, username from user where id = ?"
+	db := data.OpenDb()
+
+	row := db.QueryRow(sql, id)
+	
+	if err := row.Scan(&user.Name, &user.Username); err != nil{
+		fmt.Println("err at userdao")	
+		return &user, err
+	}
+
+	return &user, nil
+}
+
 func CreateUser(user *models.User)(int, error){
 	sql := "insert into user (name, username, pass) values (?, ?, ?)"
 
