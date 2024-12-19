@@ -56,36 +56,38 @@
 
 {{end}}
 {{block "jobList" .}}
-<div class="card w-50 mt-5 border-0">
+<div class="card w-75 mt-4 border-0">
 	<div class="card-body">
-		<h2 class="card-title"> Current Jobs </h2>
+		<h5 class="card-title"> Current Jobs </h5>
 
-		<!--<a href="" style="text-decoration: none; ">-->
-		<!--<div class="card mt-4  " style="height: 125px">-->
-		<!--		<div class="card-body">-->
-		<!--		<p class="card-text" style="text-decoration: none; font: 18px;"> Add New Job</p>-->
-		<!--		</div>-->
-		<!--</div>-->
-		<!--</a>-->
+
+
+		<ul class="list-group list-group-flush" id="job-list">
 		{{range .}}
 		{{ $url := print "../job/" .Id}}
 		<a href={{$url}} style="text-decoration: none; ">
-			<div class="card mt-4  " style="height: 125px">
-				<div class="card-body">
-					<p class="card-text" style="text-decoration: none; font: 18px;"> {{.Title}}</p>
-				</div>
-			</div>
+			<div class="row mb-2 d-flex align-items-center">
+				<div class="col-10 align-self-center">
+			<li class="list-group-item mb-0 rounded-pill shadow-sm" style="border-right: none; border-left: none;">
+					{{.Title}}
+
+
+				</li>
 		</a>
-		{{end}}
-		{{if not .}}
-			<div class="card mt-4  " style="height: 125px">
-				<div class="card-body">
-					<p class="card-text" style="text-decoration: none; font: 18px;"> No Current Jobs</p>
+			</div>
+				<div class="col-2">
+							<button class="btn dropdown-toggle border-0" data-bs-toggle="dropdown" style="background-color: transparent; outline: none;">
+							</button>
+		<ul class="dropdown-menu">
+			<li class="dropdown-item">
+				Mark as complete
+			</li>
+		</ul>
 				</div>
 			</div>
 
 		{{end}}
+			<ul>
 	</div>
 </div>
-
 {{end}}

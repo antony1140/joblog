@@ -30,11 +30,11 @@ func InitS3() ( *s3.Client){
 	return client
 }
 
-func UploadS3(client *s3.Client, file io.Reader)(error){
+func UploadS3(client *s3.Client, file io.Reader, fileKey string)(error){
 	uploader := manager.NewUploader(client)
 	result, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
 		Bucket: aws.String("jobcontracts"),
-		Key:    aws.String("newfile"),
+		Key:    aws.String(fileKey),
 		Body:   file,
 	})
 	if err != nil {
@@ -60,7 +60,7 @@ func DownloadS3(client *s3.Client, fileName string)(error){
 	// w := manager.NewWriteAtBuffer(buf)
 	numBytes, err := downloader.Download(context.TODO(), newFile, &s3.GetObjectInput{
 		Bucket: aws.String("jobcontracts"), 
-		Key:    aws.String("my-object-key"),
+		Key:    aws.String(fileName),
 	})
 	fmt.Println(numBytes, "bytes downloaded")
 	if err != nil {

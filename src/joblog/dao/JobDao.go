@@ -1,10 +1,11 @@
 package dao
 
 import (
+	"fmt"
 	"log"
-	"github.com/antony1140/joblog/models"
+
 	"github.com/antony1140/joblog/data"
-	"io"
+	"github.com/antony1140/joblog/models"
 )
 
 func CreateJob(job *models.Job){
@@ -22,7 +23,7 @@ func CreateJob(job *models.Job){
 }
 
 func GetJobById(id int)(*models.Job, error){
-	sql := "SELECT id, title, description FROM job WHERE id = ?"
+	sql := "SELECT id, title, description, client_id FROM job WHERE id = ?"
 	db := data.OpenDb()
 	var job models.Job
 	stmt, err := db.Prepare(sql)
@@ -32,7 +33,7 @@ func GetJobById(id int)(*models.Job, error){
 	defer stmt.Close()
 	row := stmt.QueryRow(id)
 
-	if err := row.Scan(&job.Id, &job.Title, &job.Description); err != nil{
+	if err := row.Scan(&job.Id, &job.Title, &job.Description, &job.ClientId); err != nil{
 		return &job, err
 	}
 	return &job, err
@@ -62,6 +63,30 @@ func GetAllJobsByOrgId(id int)([]models.Job, error){
 	return jobs, nil
 }
 
+func GetAllJobsByUserId(id int)([]models.Job, error){
+	sql := "select job.id, job.title, job.Description from job join orgusers on job.org_id = orgusers.org_id where orgusers.user_id = ?"
+	db := data.OpenDb()
+	var jobs []models.Job
+	rows, err := db.Query(sql, id)
+	if err != nil {
+		log.Print(err)
+		return jobs, err
+	}
+
+	for rows.Next(){
+		var job models.Job
+		if err := rows.Scan(&job.Id, &job.Title, &job.Description); err != nil {
+			log.Print(err)
+			return jobs, err
+		}
+		jobs = append(jobs, job)
+	}
+	fmt.Println("jobs length: ", len(jobs))
+
+	return jobs, nil
+
+}
+
 func UpdateJob(job *models.Job)(int, error){
 	sql := "UPDATE job SET title = ?, description = ?, contract = ?"
 	db := data.OpenDb()
@@ -72,9 +97,9 @@ func UpdateJob(job *models.Job)(int, error){
 	return 1, nil
 }
 
-func UploadContract(org *models.Org, file io.Reader){
-	
-	client := data.InitS3()
-	data.UploadS3(client, file)
-
-}
+// func UploadContract(org *models.Org, file io.Reader){
+//
+// 	client := data.InitS3()
+// 	data.UploadS3(client, file)
+//
+// }

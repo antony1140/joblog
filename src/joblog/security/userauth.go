@@ -85,3 +85,13 @@ func CreateSession(insert bool, id int) *http.Cookie{
 	return &cookie
 }
 
+func DestroySession(sid string)(error){
+	sql := "delete from sessions where sid = ?"
+	db := data.OpenDb()
+	_, err := db.Exec(sql, sid)
+	if err != nil {
+		log.Print(err)
+		return err
+	}
+	return nil
+}

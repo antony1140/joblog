@@ -10,6 +10,8 @@ type Job struct {
 	Id int
 	Title string
 	Description string
+	ClientId int
+	Contract bool
 }
 
 func NewJob(title string, desc string) *Job{
