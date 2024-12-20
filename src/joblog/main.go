@@ -69,6 +69,8 @@ func main(){
 	e.Static("/views", "icons")
 	e.Use(middleware.CORS())
 
+	service.DownloadReceipt(1)
+
 
 	e.GET("/", func(c echo.Context) error {
 		// haveSesh, _ := security.GetSession(c)
@@ -290,6 +292,10 @@ func main(){
 	})
 
 	e.POST("/upload/receipt/:id", func(c echo.Context) error {
+		hasUser, id := security.GetSession(c)	
+		if hasUser {
+		cookie, _ := c.Cookie("sid")
+		log.Print(id, " ", cookie.Value)
 		client := data.InitS3()	
 		Id := c.FormValue("expId")
 		expId,_ := strconv.Atoi(Id)
@@ -320,7 +326,32 @@ func main(){
 
 		log.Print("made file, " + header.Filename)
 
-		return c.NoContent(200)	
+		html := `
+							<td class="upload-rec-row">
+							<button> Dowload/view </button>
+							</td>`
+							
+
+		return c.HTML(200, html)	
+	}
+
+		return c.Redirect(302, "/")
+	})
+
+	e.GET("/download/receipt/:id", func(c echo.Context) error {
+
+		hasUser, id := security.GetSession(c)	
+		if hasUser {
+			cookie, _ := c.Cookie("sid")
+			log.Print(id, " ", cookie.Value)
+			// service.DownloadReceipt(expId)
+			
+
+
+
+
+		}
+		return c.Redirect(302, "/")
 	})
 
 	e.POST("/newGroup", func(c echo.Context) error {
@@ -418,7 +449,9 @@ func main(){
 		activeUser,_ := dao.GetUserById(id)
 		activeJob, daoErr := dao.GetJobById(jobId)
 		ClientData,_ := dao.GetClientById(activeJob.ClientId)
-		Expenses,_ := dao.GetAllExpensesByJobId(jobId)
+		ExpenseList, daoErr := dao.GetAllExpensesByJobId(jobId)
+
+		Expenses := service.GroupExpenseReceipts(ExpenseList)	
 		if daoErr != nil{
 			log.Print("failed to get job from db")
 		}
@@ -427,8 +460,7 @@ func main(){
 			Org *models.Org
 			Job *models.Job
 			Client *models.Client
-			ExpenseList []models.Expense
-
+			ExpenseList map[models.Expense] models.Receipt
 		} {
 			User: activeUser,
 			Job: activeJob,
@@ -436,11 +468,9 @@ func main(){
 			ExpenseList: Expenses,
 		}
 
-			log.Print("got to render orgPage")
 		return c.Render(200, "jobPage", data)
 
 		}
-			log.Print("got to redirect /")
 		
 		return c.Redirect(302, "/")
 		

@@ -8,6 +8,7 @@
 		<title></title>
 		<link rel="stylesheet" href="/styles.css">
 
+		<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
 
 
 	</head>
@@ -103,24 +104,32 @@
 						<th> Cost </th>
 						<th> Receipt </th>
 						<tbody>
-			{{range .}}
+			{{range $expense, $receipt := .}}
 						<tr>
 							<td>
-				{{.Name}}
+				{{$expense.Name}}
 							</td>
 							<td>
-				{{.Cost}}
+				{{$expense.Cost}}
 							</td>
-							<td class="upload-rec-row">
-					<form enctype="multipart/form-data" method="post" action={{print "/upload/receipt/" .Id}}>
+				{{if eq $receipt.Id 0}}
+				<td class="upload-rec-row" id={{print "receiptfor" $expense.Id}}>
+					<form enctype="multipart/form-data" method="post" hx-target={{print "#receiptfor" $expense.Id}} hx-swap="outerHTML" hx-trigger="submit" hx-post={{print "/upload/receipt/" $expense.Id}}>
 
 								<input type="file" name="file">
-						<input type="hidden" name="expId" value={{.Id}} >
+						<input type="hidden" name="expId" value={{$expense.Id}} >
 						<input type="submit">
 						
 					</form>
 
 							</td>
+				{{else}}
+
+							<td class="upload-rec-row">
+							<button> Dowload/view </button>
+							</td>
+
+				{{end}}
 
 						</tr>
 			{{end}}
