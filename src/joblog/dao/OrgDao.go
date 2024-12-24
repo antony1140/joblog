@@ -54,6 +54,17 @@ func GetOrgById(id int)(*models.Org, error){
 	return &org, nil
 }
 
+func GetOrgByJobId(id int)(*models.Org, error){
+	sql := "select org.id, org.name, org.description from org join job on job.org_id = org.id where job.id = ?"	
+	db := data.OpenDb()
+	row := db.QueryRow(sql, id)
+	var org models.Org
+	if err := row.Scan(&org.Id, &org.Name, &org.Description); err != nil{
+		return &org, err
+	}
+	return &org, nil
+}
+
 func GetAllOrgsByUserId(id int) ([]models.Org, error) {
 	orgs := []models.Org{}
 	db := data.OpenDb()

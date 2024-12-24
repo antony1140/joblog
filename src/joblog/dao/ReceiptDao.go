@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/antony1140/joblog/data"
@@ -23,35 +24,36 @@ func CreateReceipt(fileName string, expenseId int) (int, error){
 	return int(id), nil
 }
 
-func GetReceiptKeyByExpenseId(expId int) (int, error){
-	sql := "SELECT id from receipt where expense_id = ?"
+func GetReceiptKeyByExpenseId(expId int) (string, error){
+	sql := "SELECT fileKey from receipt where expense_id = ?"
 	db := data.OpenDb()
 	row := db.QueryRow(sql, expId)
 	var receipt models.Receipt
-	err := row.Scan(&receipt.Id)
+	err := row.Scan(&receipt.FileKey)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
-	return receipt.Id, nil
+	return receipt.FileKey, nil
 }
 
-func GetReceiptsByExpenseList(expenses []models.Expense)(map[models.Expense] models.Receipt){
+func GetReceiptsByExpenseList(expenses []models.Expense)(map[*models.Expense] *models.Receipt){
 	sql := "Select id, expense_id, fileKey from receipt where expense_id = ?"
 	db := data.OpenDb()
 	var receipts []models.Receipt
-	ExpenseMap := make(map[models.Expense] models.Receipt)
+	ExpenseMap := make(map[*models.Expense] *models.Receipt)
 	for _, expense := range expenses {
+		fmt.Print("debug expense id", expense.Id, expense.Name)
 		var receipt models.Receipt
 		row := db.QueryRow(sql, expense.Id)
 		err := row.Scan(&receipt.Id, &receipt.ExpenseId, &receipt.FileKey)
 		if err != nil {
-			log.Print(err)
+			log.Print("error at getReceipt ByExpenseList", err)
 			receipt.Id = 0
-			ExpenseMap[expense] = receipt
+			ExpenseMap[&expense] = &receipt
 			continue
 		}
 		receipts = append(receipts, receipt)	
-		ExpenseMap[expense] = receipt
+		ExpenseMap[&expense] = &receipt
 	}
 
 	return ExpenseMap

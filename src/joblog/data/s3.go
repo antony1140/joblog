@@ -89,7 +89,7 @@ func GetObject(presigner Presigner,
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
 	}, func(opts *s3.PresignOptions) {
-		opts.Expires = time.Duration(lifetimeSecs * int64(time.Second))
+		opts.Expires = time.Duration(lifetimeSecs * int64(time.Hour))
 	})
 	if err != nil {
 		log.Printf("Couldn't get a presigned request to get %v:%v. Here's why: %v\n",

@@ -63,13 +63,18 @@ func newIndexData(loginErr []LoginErr)(indexData){
 
 func main(){
 	e := echo.New()
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+      AllowOrigins: []string{"*"},
+      AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+    }))
 	e.Use(middleware.Logger())
 	e.Renderer = newTemplate()
 	e.Static("/", "views")
 	e.Static("/views", "icons")
-	e.Use(middleware.CORS())
 
 	service.DownloadReceipt(1)
+
+
 
 
 	e.GET("/", func(c echo.Context) error {
@@ -291,6 +296,72 @@ func main(){
 		return c.Redirect(302, "/")
 	})
 
+
+	e.GET("/expense/:id", func(c echo.Context) error {
+		// haveSesh, _ := security.GetSession(c)
+		// if haveSesh {
+			// userId := id	
+		// }
+		hasUser, id := security.GetSession(c)	
+		log.Print("hasUser: ", hasUser)
+		if hasUser {
+		cookie, _ := c.Cookie("sid")
+		log.Print(id, " ", cookie.Value)
+		exp := c.Param("id")
+		expId,_ := strconv.Atoi(exp)
+		fmt.Println("debug expId parameter as integer, ", expId)
+
+		activeUser,_ := dao.GetUserById(id)
+		expense, expDaoErr := dao.GetExpenseById(expId)
+		fmt.Println("debug expId after dao, ", expense.Id)
+		
+		if expDaoErr != nil {
+			log.Print("err at get expense/id Error: expDaoErr", expDaoErr)
+		}
+		var expToList []models.Expense
+		
+		tempExp := *expense
+		expToList = append(expToList, tempExp)
+		fmt.Println("debug expToList id and name, ", tempExp.Id, tempExp.Name)
+		receiptMap := service.GroupExpenseReceipts(expToList)
+
+		job, jobDaoErr := dao.GetJobById(expense.JobId)
+		if jobDaoErr != nil {
+			log.Print("err at get expense/id Error: jobDaoErr", jobDaoErr)
+		}
+		activeOrg, orgDaoErr := dao.GetOrgByJobId(job.Id)
+
+		if orgDaoErr != nil{
+			log.Print("err at get expense/id Error: orgDaoErr", orgDaoErr)
+		}
+
+		data := struct {
+			Error []error
+			User *models.User
+			Job *models.Job
+			Org *models.Org
+			Client *models.Client
+			Expense *models.Expense
+			ReceiptMap map[*models.Expense] *models.Receipt
+
+		} {
+			User: activeUser,
+			Job: job,
+			Org: activeOrg,
+			Expense: expense,
+			ReceiptMap: receiptMap,
+
+		}
+
+			log.Print("got to render home")
+		return c.Render(200, "expense", data)
+
+		}
+		
+
+		return c.Render(200, "index","" )
+	})
+
 	e.POST("/upload/receipt/:id", func(c echo.Context) error {
 		hasUser, id := security.GetSession(c)	
 		if hasUser {
@@ -312,8 +383,8 @@ func main(){
 		return c.NoContent(400)	
 		}
 
-		newFileKey, daoErr := dao.CreateReceipt(header.Filename, expId )
-		fileKey := "receipts/" + strconv.Itoa(newFileKey)
+		_, daoErr := dao.CreateReceipt(header.Filename, expId )
+		fileKey := "receipts/" + Id + "/" + header.Filename
 		if daoErr != nil {
 			log.Print(err)
 			return c.NoContent(400)
@@ -328,7 +399,7 @@ func main(){
 
 		html := `
 							<td class="upload-rec-row">
-							<button> Dowload/view </button>
+							<a href={{$receipt.S3Url}}><button> Dowload/view </button></a>
 							</td>`
 							
 
@@ -338,21 +409,28 @@ func main(){
 		return c.Redirect(302, "/")
 	})
 
-	e.GET("/download/receipt/:id", func(c echo.Context) error {
-
-		hasUser, id := security.GetSession(c)	
-		if hasUser {
-			cookie, _ := c.Cookie("sid")
-			log.Print(id, " ", cookie.Value)
-			// service.DownloadReceipt(expId)
-			
-
-
-
-
-		}
-		return c.Redirect(302, "/")
-	})
+	// e.GET("/download/receipt/:id", func(c echo.Context) error {
+	//
+	// 	hasUser, id := security.GetSession(c)	
+	// 	if hasUser {
+	// 		cookie, _ := c.Cookie("sid")
+	// 		log.Print(id, " ", cookie.Value)
+	//
+	// 		expId := c.Param("id")
+	// 		expIdStr, err := strconv.Atoi(expId)
+	// 		if err != nil {
+	// 			log.Println("error at receipt download, ", err)
+	// 		}
+	// 		request, err := service.DownloadReceipt(expIdStr)
+	//
+	// 		log.Println(request.URL)
+	// 		c.Redirect(301, request.URL)
+	//
+	//
+	//
+	// 	}
+	// 	return c.Redirect(302, "/")
+	// })
 
 	e.POST("/newGroup", func(c echo.Context) error {
 		hasUser, id := security.GetSession(c)	
@@ -391,7 +469,6 @@ func main(){
 		return c.Redirect(302, "/")
 		
 	})
-
 	e.GET("/group/:id", func(c echo.Context) error {
 		hasUser, id := security.GetSession(c)	
 		log.Print("userid: ", id)
@@ -448,10 +525,20 @@ func main(){
 
 		activeUser,_ := dao.GetUserById(id)
 		activeJob, daoErr := dao.GetJobById(jobId)
+		activeOrg, orgDaoErr := dao.GetOrgByJobId(jobId)
+		if orgDaoErr != nil {
+			log.Print(orgDaoErr)
+		}
 		ClientData,_ := dao.GetClientById(activeJob.ClientId)
 		ExpenseList, daoErr := dao.GetAllExpensesByJobId(jobId)
 
 		Expenses := service.GroupExpenseReceipts(ExpenseList)	
+		for _, receipt := range Expenses {
+			if receipt.Id != 0 {
+
+			fmt.Println("debug receipt", receipt.S3Url)
+			}
+		}
 		if daoErr != nil{
 			log.Print("failed to get job from db")
 		}
@@ -460,10 +547,11 @@ func main(){
 			Org *models.Org
 			Job *models.Job
 			Client *models.Client
-			ExpenseList map[models.Expense] models.Receipt
+			ExpenseList map[*models.Expense] *models.Receipt
 		} {
 			User: activeUser,
 			Job: activeJob,
+			Org: activeOrg,
 			Client: ClientData,
 			ExpenseList: Expenses,
 		}

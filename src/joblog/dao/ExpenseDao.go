@@ -2,6 +2,7 @@ package dao
 
 import (
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/antony1140/joblog/data"
@@ -9,18 +10,20 @@ import (
 )
 
 func GetExpenseById(id int)(*models.Expense, error){
-
-	sql := "select name, cost, job_id from expense where id = ?"
+	fmt.Println("debug in dao exp Id, ", id)
+	sql := "select id, name, cost, job_id from expense where id = ?"
 	var expense models.Expense
 
 	db := data.OpenDb()
 	row := db.QueryRow(sql, id)
-	err := row.Scan(&expense.Name, &expense.Cost, &expense.JobId)
+	err := row.Scan(&expense.Id, &expense.Name, &expense.Cost, &expense.JobId)
 
 	if err != nil {
 		log.Print(err)
 		return &expense, err
 	}
+
+	fmt.Println("debug in dao before return expense id, ", expense.Id)
 
 	return &expense, nil
 

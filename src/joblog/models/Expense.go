@@ -6,6 +6,7 @@ type Expense struct {
 	Name string
 	Cost string
 	Quant int
+	Description string
 	Receipt bool
 	
 }

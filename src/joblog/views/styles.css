@@ -1,3 +1,15 @@
+
+/*global styles*/
+
+a {
+	text-decoration: none;
+	color: black;
+}
+
+a:visited {
+	color: black;
+}
+
 body {
 	font-family: sans-serif;
 }
@@ -17,6 +29,9 @@ main {
 header {
 	grid-area: header;
 	border-bottom: 1px solid #A9A9A9;
+	display: flex;
+	align-items: center;
+	padding-left: 10px;
 }
 
 #brand {
@@ -165,3 +180,51 @@ aside li {
 
 
 }
+
+
+/*expense styles*/
+
+
+.expense-main {
+	padding-left: 10px;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+	border-left: .5px solid grey;
+}
+
+
+#item-details {
+	display: flex;
+}
+
+#expDocList ul {
+	list-style-type: none;
+	padding: 0;
+}
+
+.receipt-itemized {
+	display: flex;
+	align-items: center;
+	padding: 10px;
+}
+
+.receipt-itemized button {
+	margin-left: 10px;
+	padding: 5px;
+	background-color: black;
+	border-radius: 10px;
+	color: white;
+}
+
+
+#expense-grid-container{
+	height: 100vh;
+	display: grid;
+	grid-template-columns: .25fr 3fr;
+	grid-template-rows: .1fr auto ;
+	grid-template-areas: 
+	"brand header"
+	"side-bar main"
+}
+

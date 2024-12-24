@@ -30,6 +30,7 @@
 
 
 			<header>
+				{{template "path" .}}
 			</header>
 			<aside id="side-bar">
 				<ul>
@@ -72,6 +73,12 @@
 </html>
 {{end}}
 
+{{block "path" .}} 
+<a href={{print "/"}}>{{.User.Username}}/</a>
+<a href={{print "/group/" .Org.Id}}>{{.Org.Name}}/</a>
+<a href={{print "/job/" .Job.Id}}>{{.Job.Title}}/</a>
+{{end}}
+
 {{block "job-info" .}}
 <div id="job-info">
 					<h2> 
@@ -107,7 +114,9 @@
 			{{range $expense, $receipt := .}}
 						<tr>
 							<td>
+					<a href={{print "/expense/" $expense.Id}}>
 				{{$expense.Name}}
+					</a>
 							</td>
 							<td>
 				{{$expense.Cost}}
@@ -116,7 +125,7 @@
 				<td class="upload-rec-row" id={{print "receiptfor" $expense.Id}}>
 					<form enctype="multipart/form-data" method="post" hx-target={{print "#receiptfor" $expense.Id}} hx-swap="outerHTML" hx-trigger="submit" hx-post={{print "/upload/receipt/" $expense.Id}}>
 
-								<input type="file" name="file">
+								<input type="file" name="file" accept=".pdf">
 						<input type="hidden" name="expId" value={{$expense.Id}} >
 						<input type="submit">
 						
@@ -126,7 +135,7 @@
 				{{else}}
 
 							<td class="upload-rec-row">
-							<button> Dowload/view </button>
+					<a href={{$receipt.S3Url}} ><button> Download </button></a>
 							</td>
 
 				{{end}}
