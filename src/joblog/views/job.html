@@ -13,13 +13,6 @@
 
 	</head>
 	<body>
-		 <svg width="0" height="0" class="hidden">
-  <symbol id="option" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-    <circle cx="12" cy="12" r="2"></circle>
-    <circle cx="4" cy="12" r="2"></circle>
-    <circle cx="20" cy="12" r="2"></circle>
-  </symbol>
-</svg>
 
 		<div class="grid-container">
 			<div id="brand">
@@ -63,12 +56,13 @@
 
 				</div>
 
-				{{template "exp-widget" .ExpenseList}}
+				{{template "exp-widget" .}}
 
 				
 			</main>
 		</div>
 
+		<script src="../job.js"></script>
 	</body>
 </html>
 {{end}}
@@ -103,15 +97,18 @@
 				<div id="exp-widget">
 					<div id="exp-widget-header">
 					<h3> Expenses </h3>
-
-					<button> Add </button>
+		<form method="post" action="/create/expense">
+			<input type="text" name="job-id" value={{print .Job.Id}} hidden> 
+			<input type="text" name="org-id" value={{print .Org.Id}} hidden> 
+			<button id="exp-add-btn" type="submit"> New </button>
+		</form>
 					</div>
 					<table>
 						<th> Item </th>
 						<th> Cost </th>
 						<th> Receipt </th>
 						<tbody>
-			{{range $expense, $receipt := .}}
+			{{range $expense, $receipt := .ExpenseList}}
 						<tr>
 							<td>
 					<a href={{print "/expense/" $expense.Id}}>
@@ -119,15 +116,19 @@
 					</a>
 							</td>
 							<td>
-				{{$expense.Cost}}
+				${{$expense.Cost}}
 							</td>
 				{{if eq $receipt.Id 0}}
 				<td class="upload-rec-row" id={{print "receiptfor" $expense.Id}}>
 					<form enctype="multipart/form-data" method="post" hx-target={{print "#receiptfor" $expense.Id}} hx-swap="outerHTML" hx-trigger="submit" hx-post={{print "/upload/receipt/" $expense.Id}}>
 
-								<input type="file" name="file" accept=".pdf">
+						<label for="file" id="receipt-upload-btn">  Upload
+
+						</label>
+								<input id="file" type="file" name="file" accept=".pdf"> 
+
 						<input type="hidden" name="expId" value={{$expense.Id}} >
-						<input type="submit">
+						<button id="receipt-submit-btn" type="submit"> Submit </button>
 						
 					</form>
 

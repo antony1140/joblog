@@ -1,0 +1,81 @@
+
+#expense-main {
+	grid-area: exp-main;
+	padding-left: 10px;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+	border-left: .5px solid grey;
+	padding: 10px;
+}
+
+
+#item-details {
+	margin-top: 10px;
+	display: flex;
+}
+
+#expDocList ul {
+	list-style-type: none;
+	padding: 0;
+}
+
+.receipt-itemized {
+	display: flex;
+	align-items: center;
+	padding: 10px;
+	padding-left: 0px;
+}
+
+.receipt-itemized button {
+	margin-left: 10px;
+	padding: 5px;
+	background-color: black;
+	border-radius: 10px;
+	color: white;
+}
+
+.receipt-itemized button[type="submit"] {
+	display: none;
+}
+
+#item-edit-modal {
+	border: 1px solid grey;
+	border-radius: 5px;
+}
+
+#item-edit-form {
+	display: table;
+	 label {
+		 display: table-cell;
+	 }
+	 input {
+		 display: table-cell;
+		 padding: 5px;
+		 margin: 5px;
+	 }
+	  div {
+		  display: table-row;
+	  }
+
+	  #item-edit-btn {
+		  margin-top: 15px;
+		  margin-right: 20px;
+	  }
+
+
+}
+
+
+
+#expense-grid-container{
+	height: 100vh;
+	display: grid;
+	grid-template-columns: .25fr .75fr 3fr;
+	grid-template-rows: .25fr .75fr 3fr ;
+	grid-template-areas: 
+	"brand header header"
+	"side-bar job-info exp-main"
+	"side-bar job-info exp-main"
+}
+

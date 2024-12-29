@@ -21,7 +21,7 @@ type request struct {
 	req v4.PresignedHTTPRequest
 }
 
-func GroupExpenseReceipts(Expenses []models.Expense) (map[*models.Expense] *models.Receipt) {
+func GroupExpenseReceipts(Expenses []*models.Expense) (map[*models.Expense] *models.Receipt) {
 	ExpenseMap := dao.GetReceiptsByExpenseList(Expenses)
 	for expense, receipt := range ExpenseMap {
 		if receipt.Id != 0 {

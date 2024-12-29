@@ -74,7 +74,10 @@ func main(){
 
 	service.DownloadReceipt(1)
 
-
+	// endpoint boiler plate
+	// e.POST("", func(c echo.Context) error {
+	// 	return nil
+	// })
 
 
 	e.GET("/", func(c echo.Context) error {
@@ -204,25 +207,50 @@ func main(){
 
 	})
 
-	e.GET("/create/:type", func(c echo.Context) error{
+	e.POST("/create/:type", func(c echo.Context) error{
 
 		hasUser, id := security.GetSession(c)	
 		if hasUser {
 		cookie, _ := c.Cookie("sid")
 		log.Print(id, " ", cookie.Value)
 		choice := c.Param("type")
+		orgValue := c.FormValue("org-id")
+		orgId,_ := strconv.Atoi(orgValue)
+		jobValue := c.FormValue("job-id")
+		jobId,_ := strconv.Atoi(jobValue)
 		activeUser,_ := dao.GetUserById(id)
+		activeOrg, orgDaoErr := dao.GetOrgById(orgId)
+		if orgDaoErr != nil {
+			log.Print("error at org dao, ", orgDaoErr)
+		}
+		activeJob, jobDaoErr := dao.GetJobById(jobId)
+		if orgDaoErr != nil {
+			log.Print("error at job dao, ", jobDaoErr)
+		}
+		activeClient, clientDaoErr := dao.GetClientById(activeJob.ClientId)
+		if clientDaoErr != nil {
+			log.Print("error at client dao, ", clientDaoErr)
+		}
+		
+
 		data := struct {
 			User *models.User
 			Choice string
+			Job *models.Job
+			Org *models.Org
+			Client *models.Client
 
 		} {
 			User: activeUser,
 			Choice: choice,
+			Job: activeJob,
+			Org: activeOrg,
+			Client: activeClient,
 
 		}
-
-		return c.Render(200, "create" + choice, data)
+		render := "create" + choice
+		fmt.Println("debug rendering create" + choice)
+		return c.Render(200, render, data)
 
 		}
 		
@@ -231,7 +259,7 @@ func main(){
 
 
 	//TODO: FINISH 
-	e.POST("/editExp/:id", func(c echo.Context) error {
+	e.POST("/expense/edit/:id", func(c echo.Context) error {
 
 		hasUser, id := security.GetSession(c)	
 		if hasUser {
@@ -239,58 +267,36 @@ func main(){
 		log.Print(id, " ", cookie.Value)
 		expId, err := strconv.Atoi(c.Param("id"))
 		var errs []error
-		code := 200
 		if err != nil {
 			log.Print(err)
 			errs = append(errs, err)
-			code = 500
 		}
-		activeUser,_ := dao.GetUserById(id)
 		expense, expDaoErr := dao.GetExpenseById(expId)
 		expense.Id = expId
-		expense.Name = c.FormValue("expName")
-		expense.Cost = c.FormValue("expCost")
+		expense.Name = c.FormValue("exp-name")
+		expense.Cost = c.FormValue("exp-cost")
 		dao.UpdateExpenseById(expense)
-		job, jobDaoErr := dao.GetJobById(expense.JobId)
-		expenseList, expListErr := dao.GetAllExpensesByJobId(expense.JobId)
-		client, clientDaoErr := dao.GetClientById(job.ClientId)
-		if expListErr != nil {
-			log.Print(expListErr)
-			errs = append(errs, expListErr)
-			code = 500
-		}
-		if jobDaoErr != nil {
-			log.Print(jobDaoErr)
-			errs = append(errs, jobDaoErr)
-			code = 500
-		}
 		if expDaoErr != nil {
 			log.Print(expDaoErr)
 			errs = append(errs, expDaoErr)
-			code = 500
-		}
-		if clientDaoErr != nil {
-			log.Print(jobDaoErr)
-			errs = append(errs, jobDaoErr)
-			code = 500
 		}
 		
-		data := struct {
-			Error []error
-			User *models.User
-			Job *models.Job
-			Client *models.Client
-			ExpenseList []models.Expense
+		// data := struct {
+		// 	Error []error
+		// 	User *models.User
+		// 	Job *models.Job
+		// 	Client *models.Client
+		// 	ExpenseList []models.Expense
+		//
+		// } {
+		// 	Error: errs,
+		// 	User: activeUser,
+		// 	Job: job,
+		// 	Client: client,
+		// 	ExpenseList: expenseList,
+		// }
 
-		} {
-			Error: errs,
-			User: activeUser,
-			Job: job,
-			Client: client,
-			ExpenseList: expenseList,
-		}
-
-			return c.Render(code, "jobPage", data)
+			return c.Redirect(302, "/expense/" + strconv.Itoa(expId))
 		}
 		
 		return c.Redirect(302, "/")
@@ -318,9 +324,9 @@ func main(){
 		if expDaoErr != nil {
 			log.Print("err at get expense/id Error: expDaoErr", expDaoErr)
 		}
-		var expToList []models.Expense
+		var expToList []*models.Expense
 		
-		tempExp := *expense
+		tempExp := expense
 		expToList = append(expToList, tempExp)
 		fmt.Println("debug expToList id and name, ", tempExp.Id, tempExp.Name)
 		receiptMap := service.GroupExpenseReceipts(expToList)
@@ -329,11 +335,14 @@ func main(){
 		if jobDaoErr != nil {
 			log.Print("err at get expense/id Error: jobDaoErr", jobDaoErr)
 		}
+		ClientData,_ := dao.GetClientById(job.ClientId)
 		activeOrg, orgDaoErr := dao.GetOrgByJobId(job.Id)
 
 		if orgDaoErr != nil{
 			log.Print("err at get expense/id Error: orgDaoErr", orgDaoErr)
 		}
+
+		fmt.Println("debug expense description is,", expense.Description)
 
 		data := struct {
 			Error []error
@@ -348,12 +357,12 @@ func main(){
 			User: activeUser,
 			Job: job,
 			Org: activeOrg,
+			Client: ClientData,
 			Expense: expense,
 			ReceiptMap: receiptMap,
 
 		}
 
-			log.Print("got to render home")
 		return c.Render(200, "expense", data)
 
 		}
@@ -361,6 +370,73 @@ func main(){
 
 		return c.Render(200, "index","" )
 	})
+
+	e.POST("/newexpense", func(c echo.Context) error {
+
+		hasUser, id := security.GetSession(c)	
+		if hasUser {
+		cookie, _ := c.Cookie("sid")
+		log.Print(id, " ", cookie.Value)
+		// activeUser,_ := dao.GetUserById(id)
+
+		var newExp models.Expense
+		expName := c.FormValue("exp-name")
+		newExp.Name = expName
+		expCost := c.FormValue("exp-cost")
+		newExp.Cost = expCost
+		expDesc := c.FormValue("exp-description")
+		newExp.Description = expDesc
+
+		jobId, convErr := strconv.Atoi(c.FormValue("job-id"))
+		newExp.JobId = jobId
+		if convErr != nil {
+			log.Println(convErr)
+		}
+		// job, jobDaoErr := dao.GetJobById(jobId)
+		// if jobDaoErr != nil {
+		// 	log.Print("err at get expense/id Error: jobDaoErr", jobDaoErr)
+		// }
+		// ClientData,_ := dao.GetClientById(job.ClientId)
+		// activeOrg, orgDaoErr := dao.GetOrgByJobId(job.Id)
+		//
+		// if orgDaoErr != nil{
+		// 	log.Print("err at get expense/id Error: orgDaoErr", orgDaoErr)
+		// }
+		// ExpenseList, expDaoErr := dao.GetAllExpensesByJobId(jobId)
+		// if expDaoErr != nil {
+		// 	log.Println(expDaoErr)
+		// }
+		//
+		// Expenses := service.GroupExpenseReceipts(ExpenseList)	
+		//
+		_, err := dao.CreateExpense(&newExp)
+		if err != nil {
+			log.Println(err)
+			return c.NoContent(400)
+		}
+		// data := struct {
+		// 	Error []error
+		// 	User *models.User
+		// 	Job *models.Job
+		// 	Org *models.Org
+		// 	Client *models.Client
+		// 	Expense *models.Expense
+		// 	ExpenseList map[*models.Expense] *models.Receipt
+		//
+		// } {
+		// 	User: activeUser,
+		// 	Job: job,
+		// 	Org: activeOrg,
+		// 	Client: ClientData,
+		// 	ExpenseList: Expenses,
+		//
+		// }
+		
+		return c.Redirect(302, "/job/" + strconv.Itoa(jobId))
+		// return c.Render(200, "jobPage", data)
+	} 
+	return c.Redirect(302, "/")
+})
 
 	e.POST("/upload/receipt/:id", func(c echo.Context) error {
 		hasUser, id := security.GetSession(c)	

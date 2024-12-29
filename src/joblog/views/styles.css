@@ -1,6 +1,12 @@
 
 /*global styles*/
 
+h1, h2, h3, h4, h5 {
+	margin: 0px;
+	padding: 0px;
+	font-weight: normal;
+}
+
 a {
 	text-decoration: none;
 	color: black;
@@ -8,6 +14,16 @@ a {
 
 a:visited {
 	color: black;
+}
+
+button {
+	margin-left: 10px;
+	padding: 5px;
+	background-color: black;
+	border-radius: 10px;
+	color: white;
+	cursor: pointer;
+	font-weight; normal;
 }
 
 body {
@@ -36,6 +52,8 @@ header {
 
 #brand {
 	grid-area: brand;
+	display: flex;
+	align-items: center;
 	border-bottom: 1px solid #A9A9A9;
 }
 #brand h1 {
@@ -73,13 +91,20 @@ aside li {
 	padding: 15px;
 }
 
-#job-info h1,h2,h3,h4,h5,p {
+
+
+#job-info {
+h1,h2,h3,h4,h5,p {
 	margin: 5px;
 }
-#job-info p {
+p {
 	margin: 5px;
 	font-weight: 300;
 }
+
+
+} 
+
 
 #job-desc {
 	margin-top: 20px;
@@ -99,12 +124,19 @@ aside li {
 	display: flex;
 	align-items: center;
 	margin-bottom: 10px;
+	h3 {
+
+	font-size: 20px;
+	font-weight: normal;
+	}
 }
 #exp-widget-header button {
-	height: 50%;
 	margin-left: 10px;
-	border-radius: 10px;
-	border: thin gray;
+	border-radius: 0px;
+	border: none;
+	background-color: white;
+	color: grey;
+	font-size: 15px;
 }
 
 #exp-widget table {
@@ -129,23 +161,37 @@ aside li {
 }
 
 
-/*#exp-widget ul {*/
-/*	list-style-type: none;*/
-/*	padding: 0px;*/
-/*}*/
-/*#exp-widget li {*/
-/*	padding: 5px;*/
-/*}*/
-/**/
-/*.exp-item  {*/
-/*	display: flex;*/
-/*	border-radius: 0px;*/
-/*	margin: 10px;*/
-/*}*/
-/**/
-/*.exp-opt {*/
-/*	margin-left: 5px;*/
-/*}*/
+input[type="file"] {
+	display: none;
+}
+
+#exp-widget button[type="submit"] {
+	display: none;
+}
+
+#exp-add-btn {
+	display: block !important;
+}
+
+#receipt-submit-btn {
+	display = none;
+}
+
+#receipt-upload-btn {
+	background-color: black;
+	color: white;
+	padding: 8px;
+	height: 50%;
+	border-radius: 10px;
+	cursor: pointer;
+	display: inline-block;
+	font-size: 13px;
+	margin-left: 10px;
+	border: thin grey;
+	font-family: Arial;
+
+}
+
 
 .grid-container {
 	height: 100vh;
@@ -185,17 +231,39 @@ aside li {
 /*expense styles*/
 
 
-.expense-main {
+#expense-main {
+	grid-area: exp-main;
 	padding-left: 10px;
 	display: flex;
 	flex-direction: column;
 	flex-wrap: wrap;
 	border-left: .5px solid grey;
+	padding: 10px;
+}
+
+#item-header {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	align-items: space-between;
+	div {
+		margin: 5px;
+	}
+	button {
+		margin: 0px;
+	}
 }
 
 
 #item-details {
+	margin-top: 10px;
 	display: flex;
+}
+
+#filekey {
+	border: 1px solid grey;
+	border-radius: 5px;
+	padding: 5px;
 }
 
 #expDocList ul {
@@ -207,6 +275,7 @@ aside li {
 	display: flex;
 	align-items: center;
 	padding: 10px;
+	padding-left: 0px;
 }
 
 .receipt-itemized button {
@@ -217,14 +286,114 @@ aside li {
 	color: white;
 }
 
+.receipt-itemized button[type="submit"] {
+	display: none;
+}
+
+.upload-rec-row {
+	display: flex;
+	align-items: center;
+	padding: 0px;
+}
+
+
+
+#item-edit-modal {
+	border: 1px solid grey;
+	border-radius: 5px;
+}
+
+#item-edit-form {
+	display: table;
+	 label {
+		 display: table-cell;
+	 }
+	 input {
+		 display: table-cell;
+		 padding: 5px;
+		 margin: 5px;
+	 }
+	  div {
+		  display: table-row;
+	  }
+
+	  #item-edit-btn {
+		  margin-top: 15px;
+		  margin-right: 20px;
+	  }
+
+
+}
+
+
 
 #expense-grid-container{
 	height: 100vh;
 	display: grid;
-	grid-template-columns: .25fr 3fr;
-	grid-template-rows: .1fr auto ;
+	grid-template-columns: .25fr .75fr 3fr;
+	grid-template-rows: .1fr .75fr auto ;
 	grid-template-areas: 
-	"brand header"
-	"side-bar main"
+	"brand header header"
+	"side-bar job-info exp-main"
+	"side-bar job-info exp-main"
 }
+
+
+
+/*expense-create-styles*/
+	
+#expense-create-main {
+	grid-area: exp-create-main;
+}
+
+#new-exp {
+	padding: 10px;
+}
+
+#exp-create-form {
+	/*display: flex;*/
+	/*flex-direction: column;*/
+	/*justify-content: space-between;*/
+	/*align-items: space-between;*/
+	/*input {*/
+	/*	width: 50%;*/
+	/*}*/
+	/*button {*/
+	/*	width: 20%;*/
+	/*}*/
+	display: table;
+	 label {
+		 display: table-cell;
+	 }
+	 input {
+		 display: table-cell;
+		 padding: 5px;
+		 margin: 5px;
+	 }
+
+	 textarea {
+
+		 display: table-cell;
+		 padding: 5px;
+		 margin: 5px;
+	 }
+	  div {
+		  /*display: table-row;*/
+		  margin: 10px;
+	  }
+
+}
+
+#expense-create-grid-container{
+	height: 100vh;
+	display: grid;
+	grid-template-columns: .25fr .75fr 3fr;
+	grid-template-rows: .1fr .75fr auto ;
+	grid-template-areas: 
+	"brand header header"
+	"side-bar job-info exp-create-main"
+	"side-bar job-info exp-create-main"
+}
+
+
 

@@ -36,7 +36,7 @@ func GetReceiptKeyByExpenseId(expId int) (string, error){
 	return receipt.FileKey, nil
 }
 
-func GetReceiptsByExpenseList(expenses []models.Expense)(map[*models.Expense] *models.Receipt){
+func GetReceiptsByExpenseList(expenses []*models.Expense)(map[*models.Expense] *models.Receipt){
 	sql := "Select id, expense_id, fileKey from receipt where expense_id = ?"
 	db := data.OpenDb()
 	var receipts []models.Receipt
@@ -49,11 +49,11 @@ func GetReceiptsByExpenseList(expenses []models.Expense)(map[*models.Expense] *m
 		if err != nil {
 			log.Print("error at getReceipt ByExpenseList", err)
 			receipt.Id = 0
-			ExpenseMap[&expense] = &receipt
+			ExpenseMap[expense] = &receipt
 			continue
 		}
 		receipts = append(receipts, receipt)	
-		ExpenseMap[&expense] = &receipt
+		ExpenseMap[expense] = &receipt
 	}
 
 	return ExpenseMap

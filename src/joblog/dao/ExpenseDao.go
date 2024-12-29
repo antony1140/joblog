@@ -11,12 +11,12 @@ import (
 
 func GetExpenseById(id int)(*models.Expense, error){
 	fmt.Println("debug in dao exp Id, ", id)
-	sql := "select id, name, cost, job_id from expense where id = ?"
+	sql := "select id, name, cost, job_id, description from expense where id = ?"
 	var expense models.Expense
 
 	db := data.OpenDb()
 	row := db.QueryRow(sql, id)
-	err := row.Scan(&expense.Id, &expense.Name, &expense.Cost, &expense.JobId)
+	err := row.Scan(&expense.Id, &expense.Name, &expense.Cost, &expense.JobId, &expense.Description)
 
 	if err != nil {
 		log.Print(err)
@@ -29,9 +29,9 @@ func GetExpenseById(id int)(*models.Expense, error){
 
 }
 
-func GetAllExpensesByJobId(id int)([]models.Expense, error){
-	sql := "Select id, name, cost from expense where job_id = ?"
-	var expenseList []models.Expense
+func GetAllExpensesByJobId(id int)([]*models.Expense, error){
+	sql := "Select id, name, cost, description from expense where job_id = ?"
+	var expenseList []*models.Expense
 
 	db := data.OpenDb()
 	rows, err := db.Query(sql, id)
@@ -42,12 +42,12 @@ func GetAllExpensesByJobId(id int)([]models.Expense, error){
 	
 	for rows.Next(){
 		var expense models.Expense
-		scanErr := rows.Scan(&expense.Id, &expense.Name, &expense.Cost)
+		scanErr := rows.Scan(&expense.Id, &expense.Name, &expense.Cost, &expense.Description)
 		if scanErr != nil {
 			log.Print(scanErr)
 			return expenseList, err
 		}
-		expenseList = append(expenseList, expense)
+		expenseList = append(expenseList, &expense)
 	}
 
 	return expenseList, nil
@@ -56,9 +56,9 @@ func GetAllExpensesByJobId(id int)([]models.Expense, error){
 
 
 func CreateExpense(expense *models.Expense)(int, error){
-	sql := "insert into expense (name, cost) values (?, ?)"
+	sql := "insert into expense (name, cost, job_id, description) values (?, ?, ?, ?)"
 	db := data.OpenDb()
-	result, err := db.Exec(sql, expense.Name, expense.Cost)
+	result, err := db.Exec(sql, expense.Name, expense.Cost, expense.JobId, expense.Description)
 	if err != nil {
 		log.Print(err)
 		return 0, err
