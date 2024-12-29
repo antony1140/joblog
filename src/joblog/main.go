@@ -470,16 +470,33 @@ func main(){
 		if s3Err != nil {
 			log.Print("err 3, ", s3Err)
 		}
+		s3Err = nil
+
+		url, s3Err := service.DownloadReceipt(expId)
+		if s3Err != nil {
+			log.Print("err 4, ", s3Err)
+		}
 
 		log.Print("made file, " + header.Filename)
 
-		html := `
-							<td class="upload-rec-row">
-							<a href={{$receipt.S3Url}}><button> Dowload/view </button></a>
-							</td>`
+		// html := `
+		// 					<td class="upload-rec-row">
+		// 					<a href={{$receipt.S3Url}}><button> Dowload </button></a>
+		// 					</td>`
 							
+		// temp := template.New("temp")
+		// response, err := temp.Parse(html)
+		// if err != nil {
+		// 	log.Println(err)
+		// }
 
-		return c.HTML(200, html)	
+		data := struct{
+			S3Url string
+		} {
+			S3Url: url.URL,
+		}
+
+		return c.Render(200, "uploadedReceipt", data )	
 	}
 
 		return c.Redirect(302, "/")

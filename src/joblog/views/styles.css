@@ -145,6 +145,10 @@ p {
 	width: 100%;
 	border-spacing: 0;
 	border-collapse: collapse;
+
+	button {
+		margin: 0px;
+	}
 }
 #exp-widget td, th {
 	border-bottom: 1px solid gray;
@@ -158,6 +162,10 @@ p {
 
 #exp-widget td {
 	padding: 5px;
+}
+
+.upload-rec-row {
+	padding-left: 0px !important;
 }
 
 

@@ -171,7 +171,7 @@
 {{block "uploadedReceipt" .}}
 	
 							<td class="upload-rec-row">
-							<a href={{.S3Url}}><button> Dowload </button></a>
+							<a href={{$receipt.S3Url}}><button> Dowload </button></a>
 							</td>
 
 {{end}}
