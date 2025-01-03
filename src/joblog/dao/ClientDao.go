@@ -12,6 +12,7 @@ func GetClientById(id int)(*models.Client, error){
 	sql := "SELECT * from client where id = ?"
 
 	db := data.OpenDb()
+	defer db.Close()
 	row := db.QueryRow(sql, id)
 	err := row.Scan(&client.Id, &client.Name, &client.ContactPref, &client.ContactSec)
 	if err != nil {

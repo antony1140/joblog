@@ -26,8 +26,15 @@ button {
 	font-weight; normal;
 }
 
+label {
+	font-weight: 200;
+	font-size: 16px;
+	color: grey;
+}
+
 body {
-	font-family: sans-serif;
+	/*font-family: sans-serif;*/
+	 font-family: "Open Sans", serif;
 }
 
 header {
@@ -64,6 +71,9 @@ header {
 
 aside {
 	grid-area: side-bar;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
 	box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.05);
 	padding: 5px;
 	font-weight: 500;
@@ -80,6 +90,16 @@ aside li {
 	/*box-shadow: rgba(0, 0, 0, 0.04) 0px 3px 5px;*/
 	width: 100%;
 	border-radius: 10px;
+	
+}
+
+.side-item:hover {
+	cursor: pointer;
+}
+
+#logout-btn {
+	padding: 5px;
+
 }
 
 #job-info {
@@ -110,6 +130,45 @@ p {
 	margin-top: 20px;
 	font-weight: 300;
 }
+
+/*login page styles*/
+
+#index-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#center {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+}
+
+#login-header {
+	padding: 10px;
+}
+
+#login-form {
+	div {
+		display: flex;
+		flex-direction: column;
+		padding: 10px;
+	}
+
+	input {
+		border: 1px solid grey;
+		border-radius: 5px;
+	}
+
+	width: 40%;
+	border: .5px solid grey;
+	border-radius: 10px;
+	padding: 15px;
+}
+
+/*job page styles*/
 
 #exp-widget {
 	display: flex;
@@ -150,8 +209,18 @@ p {
 		margin: 0px;
 	}
 }
+
+#exp-widget th {
+	background-color: black;
+	color: white;
+	padding: 10px;
+	font-weight: normal;
+
+}
+
 #exp-widget td, th {
-	border-bottom: 1px solid gray;
+	/*border-bottom: 1px solid gray;*/
+	border: none;
 
 }
 
@@ -162,10 +231,12 @@ p {
 
 #exp-widget td {
 	padding: 5px;
+	border-radius: 5px;
 }
 
 .upload-rec-row {
 	padding-left: 0px !important;
+	border-radius: 5px;
 }
 
 
@@ -352,6 +423,9 @@ input[type="file"] {
 	
 #expense-create-main {
 	grid-area: exp-create-main;
+	/*display: flex;*/
+	/*justify-content: center;*/
+	/*align-items: center;*/
 }
 
 #new-exp {
@@ -377,6 +451,8 @@ input[type="file"] {
 		 display: table-cell;
 		 padding: 5px;
 		 margin: 5px;
+		 border: none;
+		 border-bottom: .5px solid grey;
 	 }
 
 	 textarea {
@@ -384,6 +460,8 @@ input[type="file"] {
 		 display: table-cell;
 		 padding: 5px;
 		 margin: 5px;
+		 border: none;
+		 border-bottom: .5px solid grey;
 	 }
 	  div {
 		  /*display: table-row;*/

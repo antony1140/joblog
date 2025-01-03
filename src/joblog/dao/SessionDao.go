@@ -7,6 +7,7 @@ import (
 func GetSessionUserBySid(sid string)(bool, int){
 	sql := "select user_Id from session where sid = ?"
 	db := data.OpenDb()
+	defer db.Close()
 	var userid int
 	row := db.QueryRow(sql, sid)
 	err := row.Scan(userid)

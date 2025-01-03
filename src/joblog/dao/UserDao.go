@@ -12,6 +12,7 @@ func GetUserByLogin(un string, pwd string) (*models.User, error){
 	pw := security.SecureCreds(pwd)
 	sql := "select id, name, username from user where username = ? and pass = ?"
 	db := data.OpenDb()
+	defer db.Close()
 
 	row := db.QueryRow(sql, un, pw)
 	
@@ -27,6 +28,7 @@ func GetUserById(id int) (*models.User, error){
 	var user models.User
 	sql := "select name, username from user where id = ?"
 	db := data.OpenDb()
+	defer db.Close()
 
 	row := db.QueryRow(sql, id)
 	
@@ -42,6 +44,7 @@ func CreateUser(user *models.User)(int, error){
 	sql := "insert into user (name, username, pass) values (?, ?, ?)"
 
 	db := data.OpenDb()
+	defer db.Close()
 	pw := user.Password
 	pwd := security.SecureCreds(pw)
 	fmt.Println(pwd)

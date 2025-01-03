@@ -502,6 +502,53 @@ func main(){
 		return c.Redirect(302, "/")
 	})
 
+
+	e.POST("/delete/receipt", func(c echo.Context) error {
+		
+		hasUser, id := security.GetSession(c)	
+		if hasUser {
+			cookie, _ := c.Cookie("sid")
+			log.Print(id, " ", cookie.Value)
+
+			// fileKey := c.FormValue("fileKey")
+			exp := c.FormValue("expId")
+			expId, err := strconv.Atoi(exp)
+			if err != nil {
+				log.Print("expense id was not an integer")
+			}
+			s3Err := service.DeleteReceipt(expId)
+			if s3Err != nil {
+				log.Print("s3 failed to delete receipt", s3Err)
+				log.Print("do something here")
+			}
+			deleteErr := dao.DeleteReceiptByExpenseId(expId)
+			if deleteErr != nil {
+				log.Print("failed to delete receipt from db", deleteErr)
+				log.Print("do something here")
+				
+			}
+
+
+			activeExp, expDaoErr := dao.GetExpenseById(expId)
+			if expDaoErr != nil {
+				log.Print(expDaoErr)
+			}
+			var expList []*models.Expense
+			expList = append(expList, activeExp)
+			newMap := service.GroupExpenseReceipts(expList)
+
+			data := struct {
+				ReceiptMap map[*models.Expense]*models.Receipt
+			} {
+				ReceiptMap: newMap,
+			}
+			return c.Render(200, "receiptReturn", data)
+		}
+		
+		html := "<div> something failed! </div>"
+		return c.HTML(200, html)
+	})
+
 	// e.GET("/download/receipt/:id", func(c echo.Context) error {
 	//
 	// 	hasUser, id := security.GetSession(c)	

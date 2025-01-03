@@ -20,6 +20,7 @@ type Presigner struct {
 	PresignClient *s3.PresignClient
 }
 
+
 func InitS3() ( *s3.Client){
 	envErr := godotenv.Load("./data/.env")
 
@@ -97,6 +98,24 @@ func GetObject(presigner Presigner,
 	}
 	log.Print(request)
 	return request, err
+}
+
+
+
+func DeleteS3(bucket string, fileKey string, client *s3.Client, ctx context.Context) (error) {
+	conf := s3.DeleteObjectInput{
+		Bucket: aws.String(bucket),
+		Key: aws.String(fileKey),
+	}	
+	out, err := client.DeleteObject(ctx, &conf)
+	fmt.Println("delete output")
+	log.Println(out)
+
+	if err != nil {
+		log.Print(err)
+		return err
+	}
+	return nil
 }
 
 

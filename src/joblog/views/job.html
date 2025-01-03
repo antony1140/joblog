@@ -7,6 +7,9 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title></title>
 		<link rel="stylesheet" href="/styles.css">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
 
 		<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
 
@@ -25,30 +28,7 @@
 			<header>
 				{{template "path" .}}
 			</header>
-			<aside id="side-bar">
-				<ul>
-					<li class="side-item">
-						Home
-					</li>
-
-					<li class="side-item">
-						Expenses
-					</li>
-
-					<li class="side-item">
-						View Documents	
-					</li>
-					<li class="side-item">
-						Invoice
-					</li>
-					<li class="side-item">
-						Edit Description
-					</li>
-					<li class="side-item">
-						Notes
-					</li>
-				</ul>
-			</aside>
+			{{template "sidebar" .}}
 			{{template "job-info" .}}
 			<main>
 				<div class="widgets">
@@ -97,11 +77,6 @@
 				<div id="exp-widget">
 					<div id="exp-widget-header">
 					<h3> Expenses </h3>
-		<form method="post" action="/create/expense">
-			<input type="text" name="job-id" value={{print .Job.Id}} hidden> 
-			<input type="text" name="org-id" value={{print .Org.Id}} hidden> 
-			<button id="exp-add-btn" type="submit"> New </button>
-		</form>
 					</div>
 					<table>
 						<th> Item </th>
@@ -171,9 +146,52 @@
 {{block "uploadedReceipt" .}}
 	
 							<td class="upload-rec-row">
-							<a href={{.S3Url}}><button> Dowload </button></a>
+							<a href={{.S3Url}}><button> Download </button></a>
 							</td>
 
+{{end}}
+
+{{block "sidebar" .}}
+
+			<aside id="side-bar">
+				<ul>
+					<li class="side-item">
+						<a href="../home">
+						Home
+						</a>
+					</li>
+
+					<!--<li class="side-item">-->
+					<!--	Expenses-->
+					<!--</li>-->
+
+					<!--<li class="side-item">-->
+					<!--	View Documents	-->
+					<!--</li>-->
+					<li onclick="navigateCreateExpense()" class="side-item">
+						Add Expense
+		<form id="new-exp-form" method="post" action="/create/expense">
+			<input type="text" name="job-id" value={{print .Job.Id}} hidden> 
+			<input type="text" name="org-id" value={{print .Org.Id}} hidden> 
+			<!--<button id="exp-add-btn" type="submit"> New </button>-->
+		</form>
+					</li>
+					<li class="side-item">
+						Invoice
+					</li>
+					<!--<li class="side-item">-->
+					<!--	Edit Description-->
+					<!--</li>-->
+					<!--<li class="side-item">-->
+					<!--	Notes-->
+					<!--</li>-->
+				</ul>
+	<a href="../logout">
+		<div id="logout-btn" class="side-item">
+			Log Out 
+		</div>
+	</a>
+			</aside>
 {{end}}
 
 

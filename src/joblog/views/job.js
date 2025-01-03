@@ -9,3 +9,8 @@ fileInput.onchange = function () {
 	receiptSubmitBtn.style.display = "block"
 }
 
+let goToExpenseCreate = document.getElementById("new-exp-form")
+function navigateCreateExpense() {
+	goToExpenseCreate.submit()
+}
+

@@ -11,6 +11,7 @@ import (
 func CreateReceipt(fileName string, expenseId int) (int, error){
 	sql := "INSERT INTO receipt(expense_id, fileKey) values (?, ?)"
 	db := data.OpenDb()
+	defer db.Close()
 
 	result, err := db.Exec(sql, expenseId, fileName )
 	if err != nil {
@@ -27,6 +28,7 @@ func CreateReceipt(fileName string, expenseId int) (int, error){
 func GetReceiptKeyByExpenseId(expId int) (string, error){
 	sql := "SELECT fileKey from receipt where expense_id = ?"
 	db := data.OpenDb()
+	defer db.Close()
 	row := db.QueryRow(sql, expId)
 	var receipt models.Receipt
 	err := row.Scan(&receipt.FileKey)
@@ -39,6 +41,7 @@ func GetReceiptKeyByExpenseId(expId int) (string, error){
 func GetReceiptsByExpenseList(expenses []*models.Expense)(map[*models.Expense] *models.Receipt){
 	sql := "Select id, expense_id, fileKey from receipt where expense_id = ?"
 	db := data.OpenDb()
+	defer db.Close()
 	var receipts []models.Receipt
 	ExpenseMap := make(map[*models.Expense] *models.Receipt)
 	for _, expense := range expenses {
@@ -58,3 +61,28 @@ func GetReceiptsByExpenseList(expenses []*models.Expense)(map[*models.Expense] *
 
 	return ExpenseMap
 }
+
+func DeleteReceiptById(id int)(error) {
+	sql := "delete from receipt where id = ?"
+	db := data.OpenDb()
+	defer db.Close()
+	_, err := db.Exec(sql, id)
+	if err != nil {
+		return err
+	}
+	
+	return nil
+}
+
+func DeleteReceiptByExpenseId(id int)(error) {
+	sql := "delete from receipt where expense_id = ?"
+	db := data.OpenDb()
+	defer db.Close()
+	_, err := db.Exec(sql, id)
+	if err != nil {
+		return err
+	}
+	
+	return nil
+}
+

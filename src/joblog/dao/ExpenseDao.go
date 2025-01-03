@@ -15,6 +15,7 @@ func GetExpenseById(id int)(*models.Expense, error){
 	var expense models.Expense
 
 	db := data.OpenDb()
+	defer db.Close()
 	row := db.QueryRow(sql, id)
 	err := row.Scan(&expense.Id, &expense.Name, &expense.Cost, &expense.JobId, &expense.Description)
 
@@ -34,6 +35,7 @@ func GetAllExpensesByJobId(id int)([]*models.Expense, error){
 	var expenseList []*models.Expense
 
 	db := data.OpenDb()
+	defer db.Close()
 	rows, err := db.Query(sql, id)
 	if err != nil {
 		log.Print(err)
@@ -58,6 +60,7 @@ func GetAllExpensesByJobId(id int)([]*models.Expense, error){
 func CreateExpense(expense *models.Expense)(int, error){
 	sql := "insert into expense (name, cost, job_id, description) values (?, ?, ?, ?)"
 	db := data.OpenDb()
+	defer db.Close()
 	result, err := db.Exec(sql, expense.Name, expense.Cost, expense.JobId, expense.Description)
 	if err != nil {
 		log.Print(err)
@@ -76,6 +79,7 @@ func CreateExpense(expense *models.Expense)(int, error){
 func UpdateExpenseById(expense *models.Expense)(int, error){
 	sql := "update expense set name = ?, cost = ? where id = ?"
 	db := data.OpenDb()
+	defer db.Close()
 	result, err := db.Exec(sql, expense.Name, expense.Cost, expense.Id)
 	if err != nil {
 		log.Print(err)

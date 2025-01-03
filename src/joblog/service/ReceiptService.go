@@ -56,3 +56,19 @@ func DownloadReceipt(expId int)(*v4.PresignedHTTPRequest, error)  {
 	return request, err
 
 }
+
+func DeleteReceipt(expId int)(error) {
+	fileKey, err := dao.GetReceiptKeyByExpenseId(expId)
+	if err != nil {
+		log.Println(err)
+	}
+	client := data.InitS3()
+	expIdStr:= strconv.Itoa(expId)
+	path := "receipts/" + expIdStr + "/" + fileKey
+	deleteErr := data.DeleteS3("jobcontracts", path, client, context.TODO())
+	log.Print("trying to delete,", path)
+	if deleteErr != nil {
+		return deleteErr
+	}
+	return nil
+}
