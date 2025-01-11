@@ -2,9 +2,12 @@ package main
 
 import (
 	// "errors"
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
-	// "net/http"
+
+	"net/http"
 
 	// "os"
 	"html/template"
@@ -121,6 +124,64 @@ func main(){
 		fmt.Println(user.Name, user.Username)
 		return nil
 	})
+
+	// e.POST("/create", func(c echo.Context) error {
+	// 	return nil
+	// })
+	
+
+	
+	//TODO: create invoice page to test all the way through invoicing process
+	e.GET("/testInvoice/:name", func(c echo.Context) error {
+
+
+		name := c.Param("name")
+
+		invData := struct {
+			Name string
+
+		} {
+			Name: name,
+		}
+
+		err := service.UploadInvoiceFromTempl("newRemote.html", invData)
+		if err != nil {
+			log.Println(err)
+			return c.HTML(200, "<h1> something went wrong </h1>")
+		}
+
+
+		var invoice models.Invoice
+		invoice.Key = "remoteTest.html"
+		jsonStr, jErr := json.Marshal(invoice)
+		data := []byte(jsonStr)
+		if jErr != nil {
+			log.Println("error encoding data", jErr)
+			return c.HTML(400, "<h1> Broken </h1>")
+		}
+
+		url := "http://localhost:3000/invoice"
+		req, reqErr := http.NewRequest("POST", url, bytes.NewBuffer(data))
+		req.Header.Set("Content-Type", "application/json; charset=UTF-8")
+		if reqErr != nil {
+			log.Println("request error", reqErr)
+			return c.HTML(400, "<h1> still Broken </h1>")
+		}
+
+		client := &http.Client{}
+		response, resErr := client.Do(req)
+		if resErr != nil {
+			log.Println("request error", resErr)
+			return c.HTML(400, "<h1> still Broken </h1>")
+		}
+		defer response.Body.Close()
+		log.Println("request status: " + response.Status)
+
+		// return c.HTML(200, "<h1> Something worked </h1>")
+
+		return c.HTML(200, "<h1> something happened </h1>")
+	})
+
 	e.POST("/login", func(c echo.Context) error {
 		username := c.FormValue("username")
 		pass := c.FormValue("password")
@@ -149,6 +210,7 @@ func main(){
 			log.Print(id, " ", cookie.Value)
 			err := security.DestroySession(cookie.Value)
 			if err != nil {
+				// c.SetHeader("HX-Redirect")
 				return c.Redirect(302, "/")
 			}
 
@@ -224,13 +286,18 @@ func main(){
 			log.Print("error at org dao, ", orgDaoErr)
 		}
 		activeJob, jobDaoErr := dao.GetJobById(jobId)
-		if orgDaoErr != nil {
+		if jobDaoErr != nil {
 			log.Print("error at job dao, ", jobDaoErr)
 		}
 		activeClient, clientDaoErr := dao.GetClientById(activeJob.ClientId)
 		if clientDaoErr != nil {
 			log.Print("error at client dao, ", clientDaoErr)
 		}
+		expenseList, expDaoErr := dao.GetAllExpensesByJobId(jobId)
+		if expDaoErr != nil {
+			log.Println(expDaoErr)
+		}
+
 		
 
 		data := struct {
@@ -239,6 +306,7 @@ func main(){
 			Job *models.Job
 			Org *models.Org
 			Client *models.Client
+			ExpenseList []*models.Expense
 
 		} {
 			User: activeUser,
@@ -246,6 +314,7 @@ func main(){
 			Job: activeJob,
 			Org: activeOrg,
 			Client: activeClient,
+			ExpenseList: expenseList,
 
 		}
 		render := "create" + choice
@@ -445,6 +514,7 @@ func main(){
 		log.Print(id, " ", cookie.Value)
 		client := data.InitS3()	
 		Id := c.FormValue("expId")
+		reqSrc := c.FormValue("src")
 		expId,_ := strconv.Atoi(Id)
 		file, header, err := c.Request().FormFile("file")
 		if err != nil {
@@ -489,18 +559,32 @@ func main(){
 		// if err != nil {
 		// 	log.Println(err)
 		// }
+			activeExp, expDaoErr := dao.GetExpenseById(expId)
+			if expDaoErr != nil {
+				log.Print(expDaoErr)
+			}
+			var expList []*models.Expense
+			expList = append(expList, activeExp)
+			newMap := service.GroupExpenseReceipts(expList)
 
-		data := struct{
-			S3Url string
-		} {
-			S3Url: url.URL,
+
+			data := struct{
+				ReceiptMap map[*models.Expense]*models.Receipt
+				S3Url string
+			} {
+				ReceiptMap: newMap,
+				S3Url: url.URL,
+			}
+
+		if reqSrc == "main" {
+			return c.Render(200, "receiptChangeReturn", data)
 		}
 
 		return c.Render(200, "uploadedReceipt", data )	
 	}
 
-		return c.Redirect(302, "/")
-	})
+	return c.Redirect(302, "/")
+})
 
 
 	e.POST("/delete/receipt", func(c echo.Context) error {
@@ -542,7 +626,7 @@ func main(){
 			} {
 				ReceiptMap: newMap,
 			}
-			return c.Render(200, "receiptReturn", data)
+			return c.Render(200, "receiptChangeReturn", data)
 		}
 		
 		html := "<div> something failed! </div>"
@@ -621,12 +705,6 @@ func main(){
 		if sqlErr != nil {
 			fmt.Println(sqlErr)
 		}
-		log.Print("jobs list: ", len(jobs))
-			
-		for _, job := range jobs {
-			fmt.Println("what is this")
-			fmt.Println(job.Title)
-		}
 		activeUser,_ := dao.GetUserById(id)
 		activeOrg, daoErr := dao.GetOrgById(orgId)
 		if daoErr != nil{
@@ -636,18 +714,18 @@ func main(){
 			User *models.User
 			Org *models.Org
 			Jobs []models.Job
+			JobNum int
 
 		} {
 			User: activeUser,
 			Jobs: jobs,
 			Org: activeOrg,
+			JobNum: len(jobs),
 		}
 
-			log.Print("got to render orgPage")
 		return c.Render(200, "orgPage", data)
 
 		}
-			log.Print("got to redirect /")
 		
 		return c.Redirect(302, "/")
 		
@@ -703,6 +781,34 @@ func main(){
 		return c.Redirect(302, "/")
 		
 	})
+
+	// e.POST("/newjob", func(c echo.Context) error {
+	//
+	// 	hasUser, id := security.GetSession(c)	
+	// 	log.Print("userid: ", id)
+	// 	log.Print("hasUser: ", hasUser)
+	// 	if hasUser {
+	// 	cookie, _ := c.Cookie("sid")
+	// 	log.Print(id, " ", cookie.Value)
+	//
+	// 	// activeUser,_ := dao.GetUserById(id)
+	//
+	// 	orgIdString := c.FormValue("org-id")
+	// 	orgId, convErr := strconv.Atoi(orgIdString)
+	// 	if convErr != nil {
+	// 		fmt.Println("error at newjob id to int conversion, need to do something here")
+	// 	}
+	//
+	// 	activeOrg, orgDaoErr := dao.GetOrgById(orgId)
+	// 	if orgDaoErr != nil {
+	// 		log.Print(orgDaoErr)
+	// 	}
+	// 	data := struct {
+	//
+	// 	}
+	// }
+	// 	return c.Redirect(302, "/")
+	// })
 
 	e.GET("/orgs/:id", func(c echo.Context) error {
 		id, err := strconv.Atoi(c.Param("id"))

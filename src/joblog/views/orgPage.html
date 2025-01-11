@@ -6,88 +6,98 @@
 	<head>
 		<meta charset="UTF-8">
 		<title></title>
-		    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 		<link rel="stylesheet" href="/styles.css">
-		    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous" defer></script>
+		<!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous" defer></script>-->
 
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<script src="../org.js" defer></script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+
+		<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
 
 
 	</head>
 	<body>
+		<div id="group-grid-container">
 
-		<nav class="navbar navbar-expand-lg bg-body-tertiary">
-			<div class="container-fluid">
-				<a class="navbar-brand" href="#">Navbar</a>
-				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-				<div class="collapse navbar-collapse" id="navbarNav">
-					<ul class="navbar-nav">
-						<li class="nav-item">
-							<a class="nav-link active" aria-current="page" href="/home">Home</a>
-						</li>
-					</ul>
-				</div>
+			<div id="brand">
+				<h1>
+					Bookie
+				</h1>
 			</div>
-		</nav>	
 
-		<main class="container">
-			{{template "Header" .Org}}
-		
-				{{template "jobList" .Jobs}}
-		</main>
+
+			<header>
+				{{template "orgPath" .}}
+			</header>
+			{{template "groupAside" .}}
+
+			<main id="group-main">
+				{{template "Header" .Org}}
+				{{template "groupJobs" .}}
+
+			</main>
+		</div>
 	</body>
 </html>
 {{end}}
-{{block "Header" .}}
-<div class="row">
-	<div class="col-4">
-	<h2 class="mt-5"> {{.Name}}</h2>
-	</div>
-	<div class="col-4">
-	</div>
-	<div class="col-4 mt-5">
-		<button style="heigh: 32px;"> New Job </button>
-		<button><img src="../icons/adduser.png" height="25"> </button>
-	</div>
 
-
-</div>
-
+{{block "orgPath" .}} 
+<a href={{print "/"}}>{{.User.Username}}/</a>
+<a href={{print "/group/" .Org.Id}}>{{.Org.Name}}/</a>
 {{end}}
-{{block "jobList" .}}
-<div class="card w-75 mt-4 border-0">
-	<div class="card-body">
-		<h5 class="card-title"> Current Jobs </h5>
+
+{{block "groupAside" .}}
+
+<aside id="generic-side-bar">
+	<ul>
+		<li class="side-item">
+			<a href="../home">
+				Home
+			</a>
+		</li>
+		<li onclick="navigateCreateJob()" class="side-item">
+			New Job
+		<form id="new-job-form" method="post" action="/create/job">
+			<input type="text" name="org-id" value={{print .Org.Id}} hidden> 
+		</form>
+			</a>
+		</li>
+
+	</ul>
+	<a href="../logout">
+		<div id="logout-btn" class="side-item">
+			Log Out 
+		</div>
+	</a>
+</aside>
+{{end}}
+
+{{block "Header" .}}
+<h2>{{.Name}}</h2>
+{{end}}
 
 
+{{block "groupJobs" .}}
 
-		<ul class="list-group list-group-flush" id="job-list">
-		{{range .}}
-		{{ $url := print "../job/" .Id}}
-		<a href={{$url}} style="text-decoration: none; ">
-			<div class="row mb-2 d-flex align-items-center">
-				<div class="col-10 align-self-center">
-			<li class="list-group-item mb-0 rounded-pill shadow-sm" style="border-right: none; border-left: none;">
-					{{.Title}}
+{{if eq .JobNum 0}}
+<span> No jobs assigned to this group yet </span>
+{{else}}
 
-
-				</li>
-		</a>
+<div id="jobs">
+<h3 id="job-header"> Jobs </h3>
+	<ul id="job-list">
+		{{range .Jobs}}
+		<li class="">
+			<div class="job-list-item">
+				<a href={{print "../job/" .Id}}><span class="job-item-name"> {{.Title}}</span></a>
+				<span class="job-item-status"> active/inactive </span>
 			</div>
-				<div class="col-2">
-							<button class="btn dropdown-toggle border-0" data-bs-toggle="dropdown" style="background-color: transparent; outline: none;">
-							</button>
-		<ul class="dropdown-menu">
-			<li class="dropdown-item">
-				Mark as complete
-			</li>
-		</ul>
-				</div>
-			</div>
-
+		</li>
 		{{end}}
-			<ul>
-	</div>
+	</ul>
 </div>
+{{end}}
+
 {{end}}

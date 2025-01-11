@@ -45,7 +45,6 @@ func DownloadReceipt(expId int)(*v4.PresignedHTTPRequest, error)  {
 	client := data.InitS3()
 	expIdStr:= strconv.Itoa(expId)
 	path := "receipts/" + expIdStr + "/" + fileKey
-	data.DownloadS3(client, fileKey)
 	presigner := data.InitS3PresignClient(client)
 	request, s3Err := data.GetObject(presigner, context.TODO(), "jobcontracts", path, 6)
 	if s3Err != nil {

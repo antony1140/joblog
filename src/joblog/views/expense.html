@@ -71,15 +71,17 @@
 							Receipt
 						</h4>
 						<ul id="exp-list">
+							{{$noReceipt := true}}
 							{{range $expense, $receipt := .ReceiptMap}}
 							{{if eq $receipt.Id 0}}
 							<div class="receipt-itemized">
-								<form enctype="multipart/form-data" method="post" hx-target={{print "#receiptfor" $expense.Id}} hx-swap="outerHTML" hx-trigger="submit" hx-post={{print "/upload/receipt/" $expense.Id}}>
+								<form enctype="multipart/form-data" method="post" hx-target="#exp-list" hx-swap="innerHTML" hx-trigger="submit" hx-post={{print "/upload/receipt/" $expense.Id}}>
 
 									<label for="file" id="receipt-upload-btn">  Upload
 
 									</label>
 									<input id="file" type="file" name="file" accept=".pdf"> 
+									<input type="hidden" name="src" value="main">
 
 									<input type="hidden" name="expId" value={{$expense.Id}} >
 									<button id="receipt-submit-btn" type="submit"> Submit </button>
@@ -89,6 +91,7 @@
 							</div>
 
 							{{else}}
+							{{$noReceipt = false}}
 							<div class="receipt-itemized" id="receipt">
 								<form id="receipt-delete-form"   hx-post="/delete/receipt"   hx-target="#receipt" hx-swap="innerHTML" >
 									<input onchange="openDeleteReceiptBtn()" type="checkbox" id="receipt-delete-checkbox">
@@ -110,9 +113,11 @@
 
 							{{end}}
 						</ul>
+						{{if eq $noReceipt false}}
 						<button id="receipt-delete-btn" onclick="deleteReceipt()" type="button" disabled>
 							Delete Receipt
 						</button>
+						{{end}}
 					</div>
 
 
@@ -152,7 +157,7 @@
 
 </html>
 {{end}}
-{{block "receiptReturn" .}} 
+{{block "receiptChangeReturn" .}} 
 
 							{{range $expense, $receipt := .ReceiptMap}}
 							{{if eq $receipt.Id 0}}
@@ -193,4 +198,5 @@
 
 							{{end}}
 {{end}}
+
 

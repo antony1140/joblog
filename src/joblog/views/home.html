@@ -6,176 +6,97 @@
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Dashboard</title>
-		    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-		<link rel="stylesheet" href="/styles.css">
-		    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous" defer></script>
+
+		<link href="/styles.css" rel="stylesheet">
 
 		<script src="/app.js" defer></script>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<script src="../job.js" defer></script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+
+		<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
 
 
 
 	</head>
-	<body style="height: 100%;" class="">
-		<nav class="navbar bg-body-tertiary">
-			<div class="container-fluid">
-				<button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#profile" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-					<span>{{.User.Username}}</span>
-				</button>
-				<!--<div class="collapse navbar-collapse" id="navbarNav">-->
-					<!--<ul class="navbar-nav">-->
-					<!--	<li class="nav-item">-->
-					<!--		<a class="nav-link active" aria-current="page" href="#">Home</a>-->
-					<!--	</li>-->
-					<!--	<li class="nav-item">-->
-					<!--		<a class="nav-link" href="#">Features</a>-->
-					<!--	</li>-->
-					<!--	<li class="nav-item">-->
-					<!--		<a class="nav-link" href="#">Pricing</a>-->
-					<!--	</li>-->
-					<!--	<li class="nav-item">-->
-					<!--		<a class="nav-link disabled" aria-disabled="true">Disabled</a>-->
-					<!--	</li>-->
-					<!--</ul>-->
-				<!--</div>-->
+	<body>
+		<div id="user-grid-container">
+			<div id="brand">
+				<h1>
+					Bookie
+				</h1>
 			</div>
-		</nav>	
 
 
+			<header>
 
-		<main class="container d-flex   " style="margin-left:;">
-				<div class="offcanvas offcanvas-start" tab-index="-1" id="sidebar" >
-				<div class="offcanvas-header">
-					    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+			</header>
+				{{template "userAside" .}}
+			<main id="user-main">
+				{{template "greeting" .}}
+				<div id="sections">
+					{{template "groups" .}}
+					{{template "jobs" .}}
+				</div>
+			</main>
+		</div>
 
-				</div>
-				<div class="offcanvas-body">
-		<aside class=" h-100 border-end d-flex flex-column " style="padding-right: 15px;">
-			<ul class="navbar-nav d-flex flex-column list-group list-group-flush " >
-				<li class="list-group-item"> Home </li>
-				<li class="list-group-item"> Logout </li>
-					<a data-bs-toggle="collapse"  href="#groups-sub-nav" style="text-decoration: none;">
-					<li class="list-group-item" style="border: none;">
-						Groups
-					</li>
-						<a>
-					<li id="" style="display: ; padding-left: 10px;">
-						<ul class="list-group list-group-flush collapse" id="groups-sub-nav">
-							<li class="list-group-item"> Create Group </li>
-							<li class="list-group-item"> Join Group </li>
-						</ul>
-					</li>
-			</ul>
-		</aside>
-				</div>
-				</div>
-			<div class="content flex-grow-1 mt-4" style="padding-left: 0px;">
-				<div class="card border-0">
-					<div class="card-body">
-				{{template "orgs" .Orgs}}
-				{{template "pinnedJobs" .Jobs}}
-					</div>
-				</div>
-			
-			</div>
-				
-		</main>
+
 	</body>
 </html>
 {{end}}
+
+{{block "groups" .}}
+<div id="groups">
+<h3 id="group-header"> My Groups </h3>
+	<ul id="group-list">
+		{{range .Orgs}}
+		<li class="">
+			<div class="group-list-item">
+				<a href={{print "../group/" .Id}}><span class="group-item-name">{{.Name}}</span></a>
+				<span class="group-item-owner"> Owner </span>
+			</div>
+		</li>
+		{{end}}
+	</ul>
+</div>
+{{end}}
+
+{{block "jobs" .}}
+
+<div id="jobs">
+<h3 id="job-header"> Recent Jobs </h3>
+	<ul id="job-list">
+		<li class="">
+			<div class="job-list-item">
+				<span class="job-item-name">Job Name</span>
+				<span class="job-item-status"> active/inactive </span>
+			</div>
+		</li>
+	</ul>
+</div>
+{{end}}
+
 {{block "greeting" .}}
-	<h2 class="mt-3" style="padding-left: 10px"> Welcome, {{.Name}}</h2>
+<h1 id="greeting"> Welcome, {{.User.Name}} </h1>
 {{end}}
-{{block "pinnedJobs" .}}
-<div class="card w-75 mt-4 border-0 shadow-sm">
-	<div class="card-body">
-		<h5 class="card-title"> Pinned Jobs </h5>
 
+{{block "userAside" .}}
 
+			<aside id="generic-side-bar">
+				<ul>
+					<li class="side-item">
+						<a href="../home">
+						Home
+						</a>
+					</li>
 
-		{{range .}}
-		<ul class="list-group list-group-flush" id="job-list">
-		{{ $url := print "job/" .Id}}
-		<a href={{$url}} style="text-decoration: none; ">
-			<li class="list-group-item mb-2 rounded-pill shadow-sm" style="border-right: none; border-left: none;">
-					{{.Title}}
-				</li>
-
-		</a>
-		{{end}}
-			<ul>
-	</div>
-</div>
-{{end}}
-{{block "orgs" .}}
-
-<!--		<div class="row d-flex align-items-center mt-5">-->
-<!--			<div class="col-4">-->
-<!--		<h2 class="card-title"> My Groups </h2>-->
-<!--			</div>-->
-<!--			<div class="col-1">-->
-<!--			</div>-->
-<!--			<div class="col-2">-->
-<!--				<a href="" id="showGroupMenu" style="text-decoration: none;">-->
-<!--<svg id="Icons" height="30" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="2"/><circle cx="4" cy="12" r="2"/><circle cx="20" cy="12" r="2"/></svg>-->
-<!--			</div>-->
-<!--			<div class="col-3">-->
-<!--		<button class="btn btn-sml" data-bs-toggle="modal" data-bs-target="#newGroupModal" id="groupMenu" style="display: none;">Add Group</button>-->
-<!--			</div>-->
-<!--		</div>-->
-<!--<div class="modal" id="newGroupModal"> -->
-<!--	<div class="modal-content">-->
-<!--		<div class="modal-header">-->
-<!--			<h5 class="modal-title"> New Group </h5>-->
-<!--			<div class="modal-body">-->
-<!--				<form action="/NewGroup" method="post"> -->
-<!--					<label for="name" class="col-form-label"> Group Name</label>-->
-<!--					<input class="form-control" name="name">-->
-<!--					<label for="desc" class="col-form-label" > Description </label>-->
-<!--					<textarea class="form-control" name="desc"></textarea>-->
-<!--					<button class="btn" type="submit"> Create Group </button>-->
-<!--				</form>-->
-<!--			</div>-->
-<!--		</div>-->
-<!--	</div>-->
-<!--</div>-->
-
-<div class="card w-75 mt-1 border-0 shadow-sm">
-	<div class="card-body">
-		<h5 class="card-title"> My Groups </h5>
-
-
-
-		{{range .}}
-		<ul class="list-group list-group-flush " id="org-list">
-		{{ $url := print "group/" .Id}}
-		<a href={{$url}} style="text-decoration: none; ">
-			<li class="list-group-item mb-2 rounded-pill shadow-sm" style="border-right: none; border-left: none;">
-					{{.Name}}
-				</li>
-
-
-		<!--<button id="">-->
-<!--		<div class="card mt-4 d-flex " style="height: 125px">-->
-<!--				<div class="card-body d-flex align-items-center">-->
-<!--				<div class="row w-100">-->
-<!--					<div class="col-6 h- d-flex justify-content-center align-items-center ">-->
-<!--<svg class="" id="Icons" height="40" viewBox="0 0 74 74" width="" xmlns="http://www.w3.org/2000/svg"><path d="m37 72a35 35 0 1 1 35-35 35.04 35.04 0 0 1 -35 35zm0-68a33 33 0 1 0 33 33 33.037 33.037 0 0 0 -33-33z"/></svg>-->
-<!---->
-<!--					</div>-->
-<!--					<div class="col-6">-->
-<!--						<p class="card-text" style="text-decoration: none; font: 18px;"> {{.Name}}</p>-->
-<!--					</div>-->
-<!--				</div>-->
-<!--				</div>-->
-<!--		</div>-->
-		<!--</button>-->
-		</a>
-		{{end}}
-			<ul>
-	</div>
-</div>
-
+				</ul>
+	<a href="../logout">
+		<div id="logout-btn" class="side-item">
+			Log Out 
+		</div>
+	</a>
+			</aside>
 {{end}}
