@@ -84,6 +84,28 @@ func DownloadS3(client *s3.Client, fileName string)(error){
 	return nil
 }
 
+func DownloadS3WithKey(client *s3.Client, fileName string, key string)(error){
+	downloader := manager.NewDownloader(client)
+	newFile, err := os.Create("./assets/"+ fileName )
+	if err != nil {
+		log.Println(err)
+	}
+	defer newFile.Close()
+	// buf := make([]byte, int(headObject.ContentLength))
+	// wrap with aws.WriteAtBuffer
+	// w := manager.NewWriteAtBuffer(buf)
+	numBytes, err := downloader.Download(context.TODO(), newFile, &s3.GetObjectInput{
+		Bucket: aws.String("jobcontracts"), 
+		Key:    aws.String(key),
+	})
+	fmt.Println(numBytes, "bytes downloaded")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func GetObject(presigner Presigner,
 	ctx context.Context, bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error) {
 	request, err := presigner.PresignClient.PresignGetObject(ctx, &s3.GetObjectInput{
@@ -96,9 +118,9 @@ func GetObject(presigner Presigner,
 		log.Printf("Couldn't get a presigned request to get %v:%v. Here's why: %v\n",
 			bucketName, objectKey, err)
 	}
-	log.Print(request)
 	return request, err
 }
+
 
 
 
@@ -107,9 +129,7 @@ func DeleteS3(bucket string, fileKey string, client *s3.Client, ctx context.Cont
 		Bucket: aws.String(bucket),
 		Key: aws.String(fileKey),
 	}	
-	out, err := client.DeleteObject(ctx, &conf)
-	fmt.Println("delete output")
-	log.Println(out)
+	_, err := client.DeleteObject(ctx, &conf)
 
 	if err != nil {
 		log.Print(err)

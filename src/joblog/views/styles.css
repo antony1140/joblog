@@ -729,6 +729,13 @@ input[type="file"] {
 	}
 }
 
+.exp-quant {
+	width: 40px;
+	margin-left: 5px;
+	border: none;
+	border-bottom: .5px solid grey;
+}
+
 #all {
 	margin-right: 15px;
 }
@@ -762,6 +769,44 @@ input[type="file"] {
 		  /*margin: 10px;*/
 	  }
 }
+
+
+/*invoice styles*/
+#inv-header {
+	display: flex;
+	margin-bottom: 60px;
+
+	p {
+		margin-bottom: 0px;
+		margin-top: 5px;
+	}
+
+}
+
+.label {
+	color: grey;
+	font-weight: lighter;
+
+}
+
+#rec-info {
+	margin-right: 200px;
+}
+
+
+#inv-table {
+	table-layout: fixed;
+	width: 100vw;
+	/*margin-left: auto;*/
+	/*margin-right: auto;*/
+td {
+	/*padding-bottom: 10px;*/
+	/*padding-right: 200px;*/
+	margin-right: 40px;
+	/*padding: 0 30px;*/
+}
+}
+
 
 
 

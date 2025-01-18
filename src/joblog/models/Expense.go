@@ -6,9 +6,10 @@ type Expense struct {
 	Name string
 	Cost string
 	Quant int
+	InvoiceQty int
 	Description string
 	Receipt bool
-	
+	AmountPaid float32
 }
 
 

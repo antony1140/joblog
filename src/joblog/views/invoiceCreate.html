@@ -47,7 +47,7 @@
 						New Invoice
 					</h2>
 
-					<form id="invoice-create-form" method="post" action="../sendinvoice">
+					<form id="invoice-create-form" method="post" action="../testinvoice">
 						<h3> Select all expenses to include </h3>
 						<!--<div>-->
 						<!--<label for="exp-name"> Name </label>-->
@@ -58,11 +58,14 @@
 						<label for="all" id="all-label"> Select All </label>
 						</div>
 						<div>
+							<hr>
 							<ul id="exp-form-list">
 								{{range .ExpenseList}}
-								<div>
-									<input class="exp-select" type="checkbox" name={{print .Name}} value={{print .Id}}> 
-									<label for={{ print .Name}}> {{.Name}} </label>
+								<div class="expense-collection" id={{print "expense-selection" .Id}}>
+									<input class="exp-select" type="checkbox" name="expense" value={{print .Id}}> 
+									<label for="quant"> Qty </label>
+									<input onchange="updateQty()" type="number" class="exp-quant" step="1" min="0" name="quant">
+									<label onchange="updateName()" class="exp-name" for="expense"> {{.Name}} </label>
 								</div>
 								<!--<span> {{.Name}} </span>-->
 								{{end}}
@@ -84,28 +87,29 @@
 						<div id="form-rec-info">
 							<div>
 								<label for="rec-name"> Name of Recipient </label>
-								<input name="rec-name" value={{.Client.Name}}>
+								<input id="rec-name" name="rec-name" value={{.Client.Name}}>
 							</div>
 							<div>
-								<label for="rec-address"> Recipient Preferred Contact </label>
-								<input name="contact" value={{ print .Client.ContactPref}}>
+								<label for="rec-contact"> Recipient Preferred Contact </label>
+								<input id="rec-contact" name="rec-contact" value={{ print .Client.ContactPref}}>
 							</div>
 
 							<div>
+								
 								<label for="rec-address"> Enter a billing address </label>
-								<input name="rec-address">
+								<input id="rec-address" name="rec-address">
 							</div>
 
 							<div>
-								<label for="email"> Enter a valid Email Address* </label>
-								<input name="email" required>
+								<label for="rec-email"> Enter a valid Email Address* </label>
+								<input id="rec-email" name="rec-email" required>
 							</div>
 						</div>
 
 
-						<input type="hidden" name="job-id" value={{print .Job.Id}}>
+						<input type="hidden" id="job-id" name="job-id" value={{print .Job.Id}}>
 
-						<button class="createButton" type="submit"> Send Invoice </button>
+						<button class="createButton" type="button" onclick="gatherExpenses()"> Send Invoice </button>
 					</form>
 				</div>
 

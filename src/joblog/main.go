@@ -2,15 +2,21 @@ package main
 
 import (
 	// "errors"
-	"bytes"
+	// "bytes"
 	"encoding/json"
+	// "encoding/json"
+	"context"
 	"fmt"
 	"os"
+	"strings"
 
-	"net/http"
+	// "os/exec"
 
-	// "os"
+	// "net/http"
+
 	"html/template"
+	// "os"
+
 	// "context"
 	"io"
 	"log"
@@ -128,58 +134,217 @@ func main(){
 	// e.POST("/create", func(c echo.Context) error {
 	// 	return nil
 	// })
-	
 
-	
-	//TODO: create invoice page to test all the way through invoicing process
-	e.GET("/testInvoice/:name", func(c echo.Context) error {
+	e.POST("/invoice", func(c echo.Context) error {
+		var invoiceRequest models.InvoiceRequest
+		err := json.NewDecoder(c.Request().Body).Decode(&invoiceRequest)
+		if err != nil {
+			log.Println("err at decode", err)
+			return c.NoContent(500)
 
+		}
+		fmt.Println("decoded: \n", invoiceRequest)
 
-		name := c.Param("name")
-
-		invData := struct {
-			Name string
-
-		} {
-			Name: name,
+		invoice, expenseList, err := service.AggregateInvoice(&invoiceRequest.Recipient, invoiceRequest.Expenses, invoiceRequest.JobId)
+		if err != nil {
+			return c.NoContent(500)
 		}
 
-		err := service.UploadInvoiceFromTempl("newRemote.html", invData)
+		invoice.Key = "invoice" + strconv.Itoa(invoice.Id) + ".html"
+		_, err = dao.UpdateInvoice(invoice)
+		if err != nil {
+			log.Println("dao err", err)
+		}
+		fileTypes := strings.Split(invoice.Key, ".")
+		htmlKey := fileTypes[0] + ".html"
+		pdfKey := fileTypes[0] + ".pdf"
+
+
+		log.Println("expense map in question: ", expenseList)
+
+		invData := struct {
+			ExpenseList map[*models.Expense] int
+			Invoice *models.Invoice
+
+		} {
+			ExpenseList: expenseList,
+			Invoice: invoice,
+		}
+
+		_, err = service.UploadInvoiceFromTempl(invoice.Key, invData)
+		if err != nil {
+			log.Println(err)
+			return c.HTML(500, "<h1> something went wrong </h1>")
+		}
+
+		file,_ := os.Open("./" + pdfKey)
+		client := data.InitS3()
+		err = data.UploadS3(client, file, "invoice/" + pdfKey)
+		if err != nil {
+			log.Println(err)
+			return c.HTML(500, "something broke at upload")
+		}
+
+
+		invoice.Key = "invoice" + pdfKey
+		dao.UpdateInvoice(invoice)
+		err = data.DeleteS3("jobcontracts", "invoice/" + htmlKey, client, context.TODO())
+		if err != nil {
+			log.Println(err)
+			return c.HTML(500, "something broke at delete")
+		}
+		os.Remove("./" + pdfKey)
+
+
+
+		jobId := strconv.Itoa(invoice.JobId)
+		return c.Redirect(302, "/job/" + jobId)
+		
+	})
+
+
+	e.GET("/succesesinvoice", func(c echo.Context) error {
+
+		return nil
+	})
+	
+
+	
+	//TODO: complete invoice template
+	//TODO: add auth to endpoint
+	//TODO: make behavior decisions based on success/failure
+	//TODO: experiment with request data format on js side
+	e.POST("/testinvoice", func(c echo.Context) error {
+
+		jobIdParam := c.FormValue("job-id")
+		jobId, err := strconv.Atoi(jobIdParam)
+		if err != nil {
+			log.Print("i should do something here", err)
+		}
+
+		vals, formErr := c.FormParams()
+		if formErr != nil {
+			log.Println(formErr)
+		}
+		fmt.Println(vals)
+		idList := vals["expense"]
+
+		var expList []*models.Expense
+		for _, id := range idList {
+			expId, err := strconv.Atoi(id)
+			if err != nil {
+				fmt.Println("i should do something here")
+				continue
+			}
+			exp, err := dao.GetExpenseById(expId)
+			if err != nil {
+				fmt.Println("i should do something here", err)
+			}
+			expList = append(expList, exp)
+		}
+
+		allQuantList := vals["quant"]
+		var expQuantList []int
+		for _, quant := range allQuantList {
+			value, err := strconv.Atoi(quant)
+			if err != nil {
+				continue
+			}
+			expQuantList = append(expQuantList, value)
+		}
+
+		fmt.Println(expQuantList)
+
+
+
+
+		var invoice models.Invoice
+		invoice.JobId = jobId
+		newId, err := dao.CreateInvoice(&invoice)
+		if err != nil {
+			log.Println("dao err", err)
+		}
+		invoice.Id = newId
+//////
+
+		invoice.Key = "invoice" + strconv.Itoa(newId) + ".html"
+		_, err = dao.UpdateInvoice(&invoice)
+		if err != nil {
+			log.Println("dao err", err)
+		}
+
+
+		// name := c.Param("name")
+		//
+		invData := struct {
+			ExpenseList []*models.Expense
+
+		} {
+			ExpenseList: expList,
+		}
+
+
+
+
+
+		htmlInv, err := service.UploadInvoiceFromTempl(invoice.Key, invData)
 		if err != nil {
 			log.Println(err)
 			return c.HTML(200, "<h1> something went wrong </h1>")
 		}
+		fileTypes := strings.Split(invoice.Key, ".")
+		htmlKey := fileTypes[0] + ".html"
+		pdfKey := fileTypes[0] + ".pdf"
 
 
-		var invoice models.Invoice
-		invoice.Key = "remoteTest.html"
-		jsonStr, jErr := json.Marshal(invoice)
-		data := []byte(jsonStr)
-		if jErr != nil {
-			log.Println("error encoding data", jErr)
-			return c.HTML(400, "<h1> Broken </h1>")
+		file,_ := os.Open("./" + pdfKey)
+		client := data.InitS3()
+		err = data.UploadS3(client, file, "invoice/" + pdfKey)
+		if err != nil {
+			log.Println(err)
+			return c.HTML(500, "something broke at upload")
+		}
+		invoice.Key = "invoice" + strconv.Itoa(newId) + ".pdf"
+		dao.UpdateInvoice(&invoice)
+		err = data.DeleteS3("jobcontracts", "invoice/" + htmlKey, client, context.TODO())
+		if err != nil {
+			log.Println(err)
+			return c.HTML(500, "something broke at delete")
 		}
 
-		url := "http://localhost:3000/invoice"
-		req, reqErr := http.NewRequest("POST", url, bytes.NewBuffer(data))
-		req.Header.Set("Content-Type", "application/json; charset=UTF-8")
-		if reqErr != nil {
-			log.Println("request error", reqErr)
-			return c.HTML(400, "<h1> still Broken </h1>")
-		}
 
-		client := &http.Client{}
-		response, resErr := client.Do(req)
-		if resErr != nil {
-			log.Println("request error", resErr)
-			return c.HTML(400, "<h1> still Broken </h1>")
-		}
-		defer response.Body.Close()
-		log.Println("request status: " + response.Status)
 
+		//
+		// jsonStr, jErr := json.Marshal(invoice)
+		// data := []byte(jsonStr)
+		// if jErr != nil {
+		// 	log.Println("error encoding data", jErr)
+		// 	return c.HTML(400, "<h1> Broken </h1>")
+		// }
+		//
+		// url := "http://localhost:3000/invoice"
+		// req, reqErr := http.NewRequest("POST", url, bytes.NewBuffer(data))
+		// req.Header.Set("Content-Type", "application/json; charset=UTF-8")
+		// if reqErr != nil {
+		// 	log.Println("request error", reqErr)
+		// 	return c.HTML(400, "<h1> still Broken </h1>")
+		// }
+		//
+		// client := &http.Client{}
+		// response, resErr := client.Do(req)
+		// if resErr != nil {
+		// 	log.Println("request error", resErr)
+		// 	return c.HTML(400, "<h1> still Broken </h1>")
+		// }
+		// defer response.Body.Close()
+		// log.Println("request status: " + response.Status)
+
+
+		//
 		// return c.HTML(200, "<h1> Something worked </h1>")
 
-		return c.HTML(200, "<h1> something happened </h1>")
+		// return c.HTML(200, "<h1> something happened </h1>")
+		return c.HTML(200, htmlInv)
 	})
 
 	e.POST("/login", func(c echo.Context) error {
@@ -384,11 +549,9 @@ func main(){
 		log.Print(id, " ", cookie.Value)
 		exp := c.Param("id")
 		expId,_ := strconv.Atoi(exp)
-		fmt.Println("debug expId parameter as integer, ", expId)
 
 		activeUser,_ := dao.GetUserById(id)
 		expense, expDaoErr := dao.GetExpenseById(expId)
-		fmt.Println("debug expId after dao, ", expense.Id)
 		
 		if expDaoErr != nil {
 			log.Print("err at get expense/id Error: expDaoErr", expDaoErr)
@@ -397,7 +560,6 @@ func main(){
 		
 		tempExp := expense
 		expToList = append(expToList, tempExp)
-		fmt.Println("debug expToList id and name, ", tempExp.Id, tempExp.Name)
 		receiptMap := service.GroupExpenseReceipts(expToList)
 
 		job, jobDaoErr := dao.GetJobById(expense.JobId)
@@ -411,7 +573,6 @@ func main(){
 			log.Print("err at get expense/id Error: orgDaoErr", orgDaoErr)
 		}
 
-		fmt.Println("debug expense description is,", expense.Description)
 
 		data := struct {
 			Error []error
@@ -753,8 +914,6 @@ func main(){
 		Expenses := service.GroupExpenseReceipts(ExpenseList)	
 		for _, receipt := range Expenses {
 			if receipt.Id != 0 {
-
-			fmt.Println("debug receipt", receipt.S3Url)
 			}
 		}
 		if daoErr != nil{

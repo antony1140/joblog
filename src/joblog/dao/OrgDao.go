@@ -91,10 +91,6 @@ func GetAllOrgsByUserId(id int) ([]models.Org, error) {
 		fmt.Println(len(orgs))
 
 	}
-		for org := range orgs {
-			fmt.Println(org)
-			fmt.Println("what even")
-		}
 	return orgs, nil
 }
 

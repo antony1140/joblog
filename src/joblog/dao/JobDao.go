@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/antony1140/joblog/data"
@@ -85,7 +84,6 @@ func GetAllJobsByUserId(id int)([]models.Job, error){
 		}
 		jobs = append(jobs, job)
 	}
-	fmt.Println("jobs length: ", len(jobs))
 
 	return jobs, nil
 
