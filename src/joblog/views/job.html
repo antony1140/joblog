@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
 
 		<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
 
 	</head>
@@ -37,13 +38,12 @@
 
 				</div>
 
-				{{template "exp-widget" .}}
+				{{template "new-exp-widget" .}}
 
 				
 			</main>
 		</div>
 
-		<script src="../job.js"></script>
 	</body>
 </html>
 {{end}}
@@ -73,76 +73,6 @@
 				</div>
 {{end}}
 
-{{block "exp-widget" .}}
-
-				<div id="exp-widget">
-					<div id="exp-widget-header">
-					<h3> Expenses </h3>
-					</div>
-					<table>
-						<th> Item </th>
-						<th> Cost </th>
-						<th> Receipt </th>
-						<tbody>
-			{{range $expense, $receipt := .ExpenseList}}
-						<tr>
-							<td>
-					<a href={{print "/expense/" $expense.Id}}>
-				{{$expense.Name}}
-					</a>
-							</td>
-							<td>
-				${{$expense.Cost}}
-							</td>
-				{{if eq $receipt.Id 0}}
-				<td class="upload-rec-row" id={{print "receiptfor" $expense.Id}}>
-					<form enctype="multipart/form-data" method="post" hx-target={{print "#receiptfor" $expense.Id}} hx-swap="outerHTML" hx-trigger="submit" hx-post={{print "/upload/receipt/" $expense.Id}}>
-
-						<label for="file" id="receipt-upload-btn">  Upload
-
-						</label>
-								<input onchange="fileInputChange()" id="file" type="file" name="file" accept=".pdf"> 
-
-						<input type="hidden" name="expId" value={{$expense.Id}} >
-						<button id="receipt-submit-btn" type="submit"> Submit </button>
-						
-					</form>
-
-							</td>
-				{{else}}
-
-							<td class="upload-rec-row">
-					<a href={{$receipt.S3Url}} ><button> Download </button></a>
-							</td>
-
-				{{end}}
-
-						</tr>
-			{{end}}
-						</tbody>
-					</table>
-					
-<!--					<ul>-->
-<!--						<div class="exp-item">-->
-<!--							<li>-->
-<!--						Replacement O-rings and washer: $5.00	-->
-<!--						</li>-->
-<!--							 <svg class="exp-opt" height="25" width="25px">-->
-<!--  <use xlink:href="#option"></use>-->
-<!--</svg>-->
-<!--						</div>-->
-<!---->
-<!--						<div class="exp-item"><li>-->
-<!--						Replacement O-rings and washer: $5.00	-->
-<!--						</li></div>-->
-<!--						<div class="exp-item"><li>-->
-<!--						Labor: 2 hours at $25/hour: $50.00	-->
-<!--						</li></div>-->
-<!---->
-<!---->
-<!--					</ul>-->
-				</div>
-{{end}}
 
 {{block "uploadedReceipt" .}}
 	

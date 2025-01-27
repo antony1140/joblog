@@ -9,13 +9,13 @@ import (
 )
 
 func GetExpenseById(id int)(*models.Expense, error){
-	sql := "select id, name, cost, job_id, description from expense where id = ?"
+	sql := "select id, name, cost, job_id, description, quant from expense where id = ?"
 	var expense models.Expense
 
 	db := data.OpenDb()
 	defer db.Close()
 	row := db.QueryRow(sql, id)
-	err := row.Scan(&expense.Id, &expense.Name, &expense.Cost, &expense.JobId, &expense.Description)
+	err := row.Scan(&expense.Id, &expense.Name, &expense.Cost, &expense.JobId, &expense.Description, &expense.Quant)
 
 	if err != nil {
 		log.Print(err)
@@ -28,7 +28,7 @@ func GetExpenseById(id int)(*models.Expense, error){
 }
 
 func GetAllExpensesByJobId(id int)([]*models.Expense, error){
-	sql := "Select id, name, cost, description from expense where job_id = ?"
+	sql := "Select id, name, cost, description, quant from expense where job_id = ?"
 	var expenseList []*models.Expense
 
 	db := data.OpenDb()
@@ -41,7 +41,7 @@ func GetAllExpensesByJobId(id int)([]*models.Expense, error){
 	
 	for rows.Next(){
 		var expense models.Expense
-		scanErr := rows.Scan(&expense.Id, &expense.Name, &expense.Cost, &expense.Description)
+		scanErr := rows.Scan(&expense.Id, &expense.Name, &expense.Cost, &expense.Description, &expense.Quant)
 		if scanErr != nil {
 			log.Print(scanErr)
 			return expenseList, err
@@ -53,12 +53,12 @@ func GetAllExpensesByJobId(id int)([]*models.Expense, error){
 
 }
 
-
+//TODO: Undo quantity hardcode
 func CreateExpense(expense *models.Expense)(int, error){
-	sql := "insert into expense (name, cost, job_id, description) values (?, ?, ?, ?)"
+	sql := "insert into expense (name, cost, job_id, description, quant) values (?, ?, ?, ?)"
 	db := data.OpenDb()
 	defer db.Close()
-	result, err := db.Exec(sql, expense.Name, expense.Cost, expense.JobId, expense.Description)
+	result, err := db.Exec(sql, expense.Name, expense.Cost, expense.JobId, expense.Description, 1)
 	if err != nil {
 		log.Print(err)
 		return 0, err

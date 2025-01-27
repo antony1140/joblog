@@ -361,43 +361,43 @@ p {
 	font-size: 15px;
 }
 
-#exp-widget table {
-	text-align: left;
-	padding: 5px;
-	width: 100%;
-	border-spacing: 0;
-	border-collapse: collapse;
-
-	button {
-		margin: 0px;
-	}
-}
-
-#exp-widget th {
-	background-color: black;
-	color: white;
-	padding: 10px;
-	font-weight: normal;
-
-}
-
-#exp-widget td, th {
-	/*border-bottom: 1px solid gray;*/
-	border: none;
-
-}
-
-
-#exp-widget tbody tr:nth-child(odd) {
-  background: #eee;
-}
-#exp-widget tbody tr:nth-child(even) {
-}
-
-#exp-widget td {
-	padding: 5px;
-	border-radius: 5px;
-}
+/*#exp-widget table {*/
+/*	text-align: left;*/
+/*	padding: 5px;*/
+/*	width: 100%;*/
+/*	border-spacing: 0;*/
+/*	border-collapse: collapse;*/
+/**/
+/*	button {*/
+/*		margin: 0px;*/
+/*	}*/
+/*}*/
+/**/
+/*#exp-widget th {*/
+/*	background-color: black;*/
+/*	color: white;*/
+/*	padding: 10px;*/
+/*	font-weight: normal;*/
+/**/
+/*}*/
+/**/
+/*#exp-widget td, th {*/
+/*	/*border-bottom: 1px solid gray;*/*/
+/*	border: none;*/
+/**/
+/*}*/
+/**/
+/**/
+/*#exp-widget tbody tr:nth-child(odd) {*/
+/*  background: #eee;*/
+/*}*/
+/*#exp-widget tbody tr:nth-child(even) {*/
+/*}*/
+/**/
+/*#exp-widget td {*/
+/*	padding: 5px;*/
+/*	border-radius: 5px;*/
+/*}*/
 
 .upload-rec-row {
 	padding-left: 0px !important;
@@ -405,9 +405,9 @@ p {
 }
 
 
-input[type="file"] {
-	display: none;
-}
+/*input[type="file"] {*/
+/*	display: none;*/
+/*}*/
 
 #exp-widget button[type="submit"] {
 	display: none;

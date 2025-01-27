@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"io"
 	"log"
 	"strconv"
 
@@ -20,6 +21,34 @@ import (
 type request struct {
 	req v4.PresignedHTTPRequest
 }
+
+
+func NewReceipt(receipt *models.Receipt, file io.Reader) (error) {
+	client := data.InitS3()
+
+	db := data.OpenDb()
+	defer db.Close()
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	_, err = dao.CreateReceipt(tx, receipt.FileKey, receipt.ExpenseId)
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	storageKey := "receipts/" + strconv.Itoa(receipt.ExpenseId) + "/" + receipt.FileKey
+	err = data.UploadS3(client, file, storageKey)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit() 
+	return nil
+}
+
 
 func GroupExpenseReceipts(Expenses []*models.Expense) (map[*models.Expense] *models.Receipt) {
 	ExpenseMap := dao.GetReceiptsByExpenseList(Expenses)

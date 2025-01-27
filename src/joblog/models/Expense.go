@@ -10,6 +10,7 @@ type Expense struct {
 	Description string
 	Receipt bool
 	AmountPaid float32
+	DocList []*Receipt
 }
 
 
