@@ -31,7 +31,7 @@ func InitS3() ( *s3.Client){
 
 	if err != nil {
 		fmt.Println("InitS3() Didnt work :/")
-		log.Fatal(err)
+		log.Print(err)
 	}
 	client := s3.NewFromConfig(cfg)
 	return client
@@ -108,9 +108,11 @@ func DownloadS3WithKey(client *s3.Client, fileName string, key string)(error){
 
 func GetObject(presigner Presigner,
 	ctx context.Context, bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error) {
+		contentType := "application/pdf"
 	request, err := presigner.PresignClient.PresignGetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
+		ResponseContentType: &contentType,
 	}, func(opts *s3.PresignOptions) {
 		opts.Expires = time.Duration(lifetimeSecs * int64(time.Hour))
 	})

@@ -112,6 +112,10 @@ func main(){
 		return controllers.DownloadReceipt(c)
 	})
 
+	e.GET("/preview/:filekey/:expid", func(c echo.Context) error {
+		return controllers.PreviewDocument(c)
+	})
+
 	e.POST("/newGroup", func(c echo.Context) error {
 		return controllers.NewGroup(c)	
 	})

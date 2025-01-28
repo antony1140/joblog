@@ -44,27 +44,7 @@
 //
 //}
 
-//const viewBtns = document.getElementsByClassName('download-btn')
-//for (btn of viewBtns) {
-//	btn.addEventListener('click', () =>{
-//		let main = document.querySelector('main')
-//		let box = document.createElement('dialog')
-//		let prev = document.createElement('iframe')
-//		let close = document.createElement('button')
-//		close.innerHTML = 'x'
-//		close.addEventListener('click', (e)=> {e.target.closest('dialog').close()})
-//		prev.setAttribute('src', btn.id)
-//		prev.setAttribute('width', 600)
-//		prev.setAttribute('height', 900)
-//		main.append(box)
-//		box.append(prev)
-//		box.append(close)
-//		box.style.display = 'flex'
-//		box.showModal()
-//		console.log(prev)
-//		console.log(box)
-//	})
-//}
+const ViewBtns = document.getElementsByClassName('download-btn')
 
 let uploadBtns = document.getElementsByClassName('upload')
 for (btn of uploadBtns) {

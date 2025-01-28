@@ -63,13 +63,43 @@ func UploadReceipt(c echo.Context) (error) {
 		data := struct{
 			Receipt *models.Receipt
 			S3Url string
+			ExpenseId int
 		} {
 			Receipt: receipt,
 			S3Url: url.URL,
+			ExpenseId: expId,
 
 		}
 		return c.Render(200, "uploadDocResponse", data )	
 
+}
+
+func PreviewDocument(c echo.Context) (error) {
+	hasUser, _ := security.GetSession(c)
+	if !hasUser {
+		return c.Redirect(302, "/")
+	}
+
+	params := c.ParamValues()
+	fileKey := params[0]
+	expIdstr := params[1]
+	log.Println("debug key, id: ", fileKey, expIdstr)
+	expId, err := strconv.Atoi(expIdstr)
+	if err != nil {
+		log.Println("error getting document", err)
+		return c.Redirect(302, "/expense" + expIdstr)
+	}
+	req, err := service.DownloadReceiptByFileKey(fileKey, expId)
+	url := req.URL
+
+	data := struct {
+		S3Url string
+	} {
+		S3Url: url,
+	}
+	
+
+	return c.Render(200, "preview", data)
 }
 
 func DownloadReceipt(c echo.Context) (error) {

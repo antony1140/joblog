@@ -85,6 +85,22 @@ func DownloadReceipt(expId int)(*v4.PresignedHTTPRequest, error)  {
 
 }
 
+
+func DownloadReceiptByFileKey(key string, expId int)(*v4.PresignedHTTPRequest, error)  {
+	client := data.InitS3()
+	expIdStr:= strconv.Itoa(expId)
+	path := "receipts/" + expIdStr + "/" + key
+	presigner := data.InitS3PresignClient(client)
+	request, err := data.GetObject(presigner, context.TODO(), "jobcontracts", path, 6)
+	if err != nil {
+		log.Println("s3 failed to retreive presigned link", err)
+	}
+
+
+	return request, err
+
+}
+
 func DeleteReceipt(expId int)(error) {
 	fileKey, err := dao.GetReceiptKeyByExpenseId(expId)
 	if err != nil {

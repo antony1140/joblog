@@ -31,11 +31,16 @@
 				</td>
 				<td class="p-4 border-b border-blue-gray-50">
 							{{if $receipt.FileKey}}
-					<a href={{print $receipt.S3Url}}>
-						<p class="text-sm">
+					<!--<a href={{print $receipt.S3Url}}>-->
+						<p
+						hx-trigger="click" 
+						hx-get={{print "../preview/" $receipt.FileKey  "/"  $expense.Id}}
+						hx-target="main"
+						hx-swap="innerHTML"
+						class="text-sm download-btn" id={{$receipt.S3Url}}>
 									Download
 						</p>
-					</a>
+					<!--</a>-->
 							{{else}}
 					<form enctype="multipart/form-data"  hx-post={{print "../upload/receipt/" $expense.Id}} hx-target="closest tr" hx-swap="outerHTML">
 					<p class="text-sm upload">
@@ -62,11 +67,14 @@
 				</td>
 				<td class="p-4 border-b border-blue-gray-50">
 							{{if .Receipt.FileKey}}
-					<a href={{print .S3Url}}>
-						<p class="text-sm">
+						<p
+						hx-trigger="click" 
+						hx-get={{print "../preview/" .Receipt.FileKey  "/"  .ExpenseId}}
+						hx-target="main"
+						hx-swap="innerHTML"
+						class="text-sm download-btn" id={{.S3Url}}>
 									Download
 						</p>
-					</a>
 							{{else}}
 					<form>
 					<p class="text-sm">
