@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/antony1140/joblog/dao"
 	"github.com/antony1140/joblog/data"
@@ -79,10 +80,11 @@ func PreviewDocument(c echo.Context) (error) {
 	if !hasUser {
 		return c.Redirect(302, "/")
 	}
-
-	params := c.ParamValues()
-	fileKey := params[0]
-	expIdstr := params[1]
+	
+	values := c.Request().URL.Path
+	vals := strings.Split(values, "/")
+	fileKey := vals[2]
+	expIdstr := vals[3]
 	log.Println("debug key, id: ", fileKey, expIdstr)
 	expId, err := strconv.Atoi(expIdstr)
 	if err != nil {
