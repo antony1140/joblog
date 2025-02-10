@@ -7,8 +7,8 @@ import (
 	"github.com/antony1140/joblog/models"
 )
 
-func CreateJob(job *models.Job){
-	sql := "INSERT INTO job (title, description) values (?, ?)"	
+func CreateJob(job *models.Job)(error){
+	sql := "INSERT INTO job (title, description, org_id) values (?, ?, ?)"	
 	db := data.OpenDb()
 	defer db.Close()
 	stmt, err := db.Prepare(sql)
@@ -17,9 +17,10 @@ func CreateJob(job *models.Job){
 	}
 	defer stmt.Close()
 
-	if _, err := stmt.Exec(job.Title, job.Description); err != nil {
-		log.Fatal(err)
+	if _, err := stmt.Exec(job.Title, job.Description, job.OrgId); err != nil {
+		return err
 	}
+	return nil
 }
 
 func GetJobById(id int)(*models.Job, error){

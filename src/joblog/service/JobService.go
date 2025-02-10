@@ -1,8 +1,11 @@
 package service
+
 import (
-	"github.com/antony1140/joblog/models"
-	"github.com/antony1140/joblog/dao"
 	"database/sql"
+	"log"
+
+	"github.com/antony1140/joblog/dao"
+	"github.com/antony1140/joblog/models"
 )
 
 type JobService struct {
@@ -15,4 +18,14 @@ func GetJobById(id int)(*models.Job, error){
 		return nil, err
 	}
 	return job, nil
+}
+
+func NewJob(job *models.Job) (error) {
+	err := dao.CreateJob(job)
+	if err != nil {
+		log.Println("error creating job at dao", err)
+		return err
+	}
+
+	return nil
 }

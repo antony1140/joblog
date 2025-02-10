@@ -56,4 +56,35 @@ func Job(c echo.Context) (error) {
 
 }
 
+func NewJob(c echo.Context) (error) {
+	hasUser, _ := security.GetSession(c)
+	if !hasUser {
+		return c.Redirect(302, "/")
+	}
+	
+	jobName := c.FormValue("job-name")
+	
+	jobDesc := c.FormValue("job-desc")
+	groupId, err := strconv.Atoi(c.FormValue("group-id"))
+	if err != nil {
+		log.Println("error creating job", err)
+		return c.Redirect(302, "/home")
+	}
+	log.Println("name, desc, id: ", jobName, jobDesc, groupId)
+	job := models.Job{
+		Title: jobName,
+		Description: jobDesc, 
+		OrgId: groupId,
+		
+	}
+
+	err = service.NewJob(&job)
+	if err != nil {
+		log.Println("error creating job", err)
+		return c.Redirect(302, "/home")
+	}
+
+	return c.Redirect(302, "/group/" + strconv.Itoa(groupId))
+}
+
 

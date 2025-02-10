@@ -76,7 +76,7 @@ func NewInvoice(c echo.Context) (error) {
 
 	invoice.Key = "invoice" + pdfKey
 	dao.UpdateInvoice(invoice)
-	err = data.DeleteS3("jobcontracts", "invoice/" + htmlKey, client, context.TODO())
+	err = data.DeleteS3("invoice/" + htmlKey, client, context.TODO())
 	if err != nil {
 		log.Println(err)
 		return c.HTML(500, "something broke at delete")

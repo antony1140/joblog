@@ -27,6 +27,28 @@ func Index(c echo.Context) (error) {
 	return c.Render(200, "index","" )
 }
 
+func Register(c echo.Context) (error) {
+	firstName := c.FormValue("first-name")
+	lastName := c.FormValue("last-name")
+	username := c.FormValue("username")
+
+	email := c.FormValue("email")
+	pw := c.FormValue("password")
+	user := models.User{
+		Name: firstName + " " + lastName,
+		Email: email,
+		Username: username,
+		Password: pw,
+	}
+
+	_, err := service.CreateUser(&user)
+
+if err != nil {
+	log.Println("error creating user:", err)
+}
+return c.Redirect(302, "/")
+}
+
 func Login(c echo.Context) (error) {
 	username := c.FormValue("username")
 	pass := c.FormValue("password")

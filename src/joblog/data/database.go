@@ -1,33 +1,55 @@
 package data
 
 import (
-	_ "github.com/mattn/go-sqlite3"
 	"database/sql"
 	"log"
 	"os"
+	"strings"
+	_ "github.com/mattn/go-sqlite3"
 )
 
+
 func InitDb(){
-	os.Create("./data/joblog.db")
-	db, err := sql.Open("sqlite3", "./data/joblog.db")
-	if err != nil {
-		log.Fatal(err)
+	var src string
+	if os.Getenv("MODE") == "prod" {
+		src = "./data/prod_joblog.db"
+	} else {
+		src = "./data/joblog.db"
 	}
-
-
-	statement, err := db.Prepare("CREATE TABLE IF NOT EXISTS Job (id INTEGER PRIMARY KEY AUTOINCREMENT, title varchar(255), description varchar(255), contract INTEGER, Foreign Key (contract) References Contracts (id));")
-
-	statement.Exec()
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	os.Open("./data/prod_joblog.db")
+	db, err := sql.Open("sqlite3", src)
 	defer db.Close()
-}
+	if err != nil {
+		log.Println("err 1")
+		log.Fatal(err)
+	}
+
+		schema := strings.Split(os.Getenv("DB_SCHEMA"), ";")
+		for _, column := range schema {
+			_, err := db.Exec(column)
+			if err != nil {
+				log.Println("error executing line: " + column + ", error:", err)
+			}
+		}
+	}
+
+
+
+
+
+
+
 
 
 func OpenDb() *sql.DB{
-	db, err := sql.Open("sqlite3", "./data/joblog.db")
+	var source string
+	if os.Getenv("MODE") == "prod" {
+		source = "./data/prod_joblog.db"	
+	} else {
+		source = "./data/joblog.db"
+	}
+
+	db, err := sql.Open("sqlite3", source)
 	if err != nil {
 		log.Fatal(err)
 	}

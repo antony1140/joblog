@@ -12,6 +12,7 @@ type Job struct {
 	Description string
 	ClientId int
 	Contract bool
+	OrgId int
 }
 
 func NewJob(title string, desc string) *Job{

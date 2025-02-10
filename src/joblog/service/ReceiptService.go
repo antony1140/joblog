@@ -75,8 +75,9 @@ func DownloadReceipt(expId int)(*v4.PresignedHTTPRequest, error)  {
 	expIdStr:= strconv.Itoa(expId)
 	path := "receipts/" + expIdStr + "/" + fileKey
 	presigner := data.InitS3PresignClient(client)
-	request, s3Err := data.GetObject(presigner, context.TODO(), "jobcontracts", path, 6)
+	request, s3Err := data.GetObject(presigner, context.TODO(),path, 6)
 	if s3Err != nil {
+
 		log.Println("s3 failed to retreive presigned link", s3Err)
 	}
 
@@ -91,7 +92,7 @@ func DownloadReceiptByFileKey(key string, expId int)(*v4.PresignedHTTPRequest, e
 	expIdStr:= strconv.Itoa(expId)
 	path := "receipts/" + expIdStr + "/" + key
 	presigner := data.InitS3PresignClient(client)
-	request, err := data.GetObject(presigner, context.TODO(), "jobcontracts", path, 6)
+	request, err := data.GetObject(presigner, context.TODO(), path, 6)
 	if err != nil {
 		log.Println("s3 failed to retreive presigned link", err)
 	}
@@ -109,7 +110,7 @@ func DeleteReceipt(expId int)(error) {
 	client := data.InitS3()
 	expIdStr:= strconv.Itoa(expId)
 	path := "receipts/" + expIdStr + "/" + fileKey
-	deleteErr := data.DeleteS3("jobcontracts", path, client, context.TODO())
+	deleteErr := data.DeleteS3(path, client, context.TODO())
 	log.Print("trying to delete,", path)
 	if deleteErr != nil {
 		return deleteErr

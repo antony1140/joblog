@@ -2,13 +2,15 @@ package security
 
 import (
 	"crypto/sha256"
+	"log"
+	"net/http"
+	"os"
+	"strconv"
+	"time"
+
+	"github.com/antony1140/joblog/data"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"net/http"
-	"time"
-	"github.com/antony1140/joblog/data"
-	"log"
-	
 )
 
 func SecureCreds(pwd string)(string){
@@ -51,6 +53,10 @@ func GetSession(c echo.Context)(bool, int){
 
 func CreateSession(insert bool, id int) *http.Cookie{
 	sid := uuid.NewString()
+	sessionExpiration, err := strconv.Atoi(os.Getenv("SESSION_EXPIRATION"))
+	if err != nil {
+		log.Println(err)
+	}
 	cookie := http.Cookie {
 		Name:   "sid",
 		Value: sid,
@@ -58,7 +64,7 @@ func CreateSession(insert bool, id int) *http.Cookie{
 	//
 	// Path       string    // optional
 	// Domain     string    // optional
-		Expires:   time.Now().Add(time.Second * 1800),
+		Expires:   time.Now().Add(time.Minute * time.Duration(sessionExpiration)),
 	// RawExpires string    // for reading cookies only
 	//
 	// // MaxAge=0 means no 'Max-Age' attribute specified.

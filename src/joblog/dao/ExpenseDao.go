@@ -55,7 +55,7 @@ func GetAllExpensesByJobId(id int)([]*models.Expense, error){
 
 //TODO: Undo quantity hardcode
 func CreateExpense(expense *models.Expense)(int, error){
-	sql := "insert into expense (name, cost, job_id, description, quant) values (?, ?, ?, ?)"
+	sql := "insert into expense (name, cost, job_id, description, quant) values (?, ?, ?, ?, ?)"
 	db := data.OpenDb()
 	defer db.Close()
 	result, err := db.Exec(sql, expense.Name, expense.Cost, expense.JobId, expense.Description, 1)

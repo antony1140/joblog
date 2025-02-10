@@ -1,16 +1,15 @@
 package main
 
 import (
-
-
-
 	"html/template"
-	// "os"
+	"log"
+	"os"
 
-	// "context"
 	"io"
 
 	"github.com/antony1140/joblog/controllers"
+	"github.com/antony1140/joblog/data"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -44,6 +43,11 @@ func main(){
 	e.Static("/", "views")
 	e.Static("/views", "icons")
 
+	envErr := godotenv.Load()
+	if envErr != nil {
+		log.Fatal(envErr)
+	}
+
 
 	// endpoint boiler plate
 	// e.POST("", func(c echo.Context) error {
@@ -66,7 +70,15 @@ func main(){
 
 		return nil
 	})
+
 	
+	e.GET("/register", func(c echo.Context) error {
+		return c.Render(200, "register", "")
+	})
+
+	e.POST("/newuser", func(c echo.Context) error {
+		return controllers.Register(c)
+	})
 
 	e.POST("/login", func(c echo.Context) error {
 		return controllers.Login(c)
@@ -127,40 +139,24 @@ func main(){
 		return controllers.Job(c)	
 	})
 
-	// e.POST("/newjob", func(c echo.Context) error {
-	//
-	// 	hasUser, id := security.GetSession(c)	
-	// 	log.Print("userid: ", id)
-	// 	log.Print("hasUser: ", hasUser)
-	// 	if hasUser {
-	// 	cookie, _ := c.Cookie("sid")
-	// 	log.Print(id, " ", cookie.Value)
-	//
-	// 	// activeUser,_ := dao.GetUserById(id)
-	//
-	// 	orgIdString := c.FormValue("org-id")
-	// 	orgId, convErr := strconv.Atoi(orgIdString)
-	// 	if convErr != nil {
-	// 		fmt.Println("error at newjob id to int conversion, need to do something here")
-	// 	}
-	//
-	// 	activeOrg, orgDaoErr := dao.GetOrgById(orgId)
-	// 	if orgDaoErr != nil {
-	// 		log.Print(orgDaoErr)
-	// 	}
-	// 	data := struct {
-	//
-	// 	}
-	// }
-	// 	return c.Redirect(302, "/")
-	// })
+	e.POST("/newjob", func(c echo.Context) error {
+		return controllers.NewJob(c)
+	})
 
 
 
 
-	
+	// vars := os.Environ()	
 
-	e.Logger.Fatal(e.Start(":3333"))
+
+
+	data.InitDb()
+	if os.Getenv("MODE") == "prod" {
+		log.Print(`///////////// 
+		PRODUCTION  
+		//////////`)
+	} 
+	e.Logger.Fatal(e.Start(os.Getenv("PORT")))
 
 
 }

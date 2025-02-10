@@ -13,7 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 )
 
 type Presigner struct {
@@ -22,11 +22,6 @@ type Presigner struct {
 
 
 func InitS3() ( *s3.Client){
-	envErr := godotenv.Load("./data/.env")
-
-	if envErr != nil {
-		log.Fatal(envErr)
-	}
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 
 	if err != nil {
@@ -47,7 +42,7 @@ s3.NewPresignClient(client),
 func UploadS3(client *s3.Client, file io.Reader, fileKey string)(error){
 	uploader := manager.NewUploader(client)
 	result, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
-		Bucket: aws.String("jobcontracts"),
+		Bucket: aws.String(os.Getenv("AWS_S3_BUCKET")),
 		Key:    aws.String(fileKey),
 		Body:   file,
 	})
@@ -73,7 +68,7 @@ func DownloadS3(client *s3.Client, fileName string)(error){
 	// wrap with aws.WriteAtBuffer
 	// w := manager.NewWriteAtBuffer(buf)
 	numBytes, err := downloader.Download(context.TODO(), newFile, &s3.GetObjectInput{
-		Bucket: aws.String("jobcontracts"), 
+		Bucket: aws.String(os.Getenv("AWS_S3_BUCKET")), 
 		Key:    aws.String(fileName),
 	})
 	fmt.Println(numBytes, "bytes downloaded")
@@ -95,7 +90,7 @@ func DownloadS3WithKey(client *s3.Client, fileName string, key string)(error){
 	// wrap with aws.WriteAtBuffer
 	// w := manager.NewWriteAtBuffer(buf)
 	numBytes, err := downloader.Download(context.TODO(), newFile, &s3.GetObjectInput{
-		Bucket: aws.String("jobcontracts"), 
+		Bucket: aws.String(os.Getenv("AWS_S3_BUCKET")), 
 		Key:    aws.String(key),
 	})
 	fmt.Println(numBytes, "bytes downloaded")
@@ -107,8 +102,9 @@ func DownloadS3WithKey(client *s3.Client, fileName string, key string)(error){
 }
 
 func GetObject(presigner Presigner,
-	ctx context.Context, bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error) {
+	ctx context.Context, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error) {
 		contentType := "application/pdf"
+		bucketName := os.Getenv("AWS_S3_BUCKET")
 	request, err := presigner.PresignClient.PresignGetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
@@ -126,9 +122,9 @@ func GetObject(presigner Presigner,
 
 
 
-func DeleteS3(bucket string, fileKey string, client *s3.Client, ctx context.Context) (error) {
+func DeleteS3(fileKey string, client *s3.Client, ctx context.Context) (error) {
 	conf := s3.DeleteObjectInput{
-		Bucket: aws.String(bucket),
+		Bucket: aws.String(os.Getenv(os.Getenv("AWS_S3_BUCKET"))),
 		Key: aws.String(fileKey),
 	}	
 	_, err := client.DeleteObject(ctx, &conf)
